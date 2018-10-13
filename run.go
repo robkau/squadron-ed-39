@@ -15,7 +15,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "Platformer",
-		Bounds: pixel.R(0, 0, 1024, 768),
+		Bounds: pixel.R(-800, -500, 800, 500),
 		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(cfg)
@@ -23,14 +23,15 @@ func run() {
 		panic(err)
 	}
 
-	nb := 5
-	var bullets = make([]*bullet, nb)
+	nb := 10
+	var bullets = make([]*bullet, nb*2, nb*40)
 
-	for i := 0; i < nb; i++ {
+	for i := -10; i < nb; i++ {
 		var x float64
 		x = float64(i * 25)
-		bullets[i] = &bullet{
+		bullets[i+nb] = &bullet{
 			rect: pixel.R(x-5, -7, x+5, 7),
+			dest: pixel.Vec{X: -20 * float64(i), Y: 480},
 		}
 	}
 
@@ -38,21 +39,35 @@ func run() {
 	phys.bullets = bullets
 
 	// hardcoded level
-	platforms := []platform{
-		{rect: pixel.R(-1024/2, 780, 1024/2, 800)},
+	platforms := []*platform{
+		{rect: pixel.R(-1024/2, 480, 1024/2, 500)},
 	}
 	for i := range platforms {
 		platforms[i].color = randomNiceColor()
 	}
 
-	canvas := pixelgl.NewCanvas(pixel.R(-800, -800, 800, 800))
+	canvas := pixelgl.NewCanvas(pixel.R(-800, -500, 800, 500))
 	imd := imdraw.New(nil)
 	imd.Precision = 32
+
+	lastBulletSpawn := 0
+	bulletSpawnDiffFrames := 1
 
 	last := time.Now()
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
+
+		// spawn new bullets towards mouse
+		if lastBulletSpawn >= bulletSpawnDiffFrames {
+			phys.bullets = append(phys.bullets, &bullet{
+				rect: pixel.R(-5, -7, 5, 7),
+				dest: win.MousePosition(),
+			})
+			lastBulletSpawn = 0
+		} else {
+			lastBulletSpawn += 1
+		}
 
 		//canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
 
@@ -64,7 +79,7 @@ func run() {
 		// control the gopher with keys
 		ctrl := pixel.ZV
 		// update the physics and animation
-		phys.update(dt, ctrl, platforms)
+		phys.update(dt, ctrl, &platforms)
 
 		// draw the scene to the canvas using IMDraw
 		canvas.Clear(colornames.Black)
