@@ -24,9 +24,9 @@ func draw(imd *imdraw.IMDraw, phys *objects) {
 		if b == nil || b.collided {
 			continue
 		}
-		imd.Push(b.rect.Min, b.rect.Max)
-		imd.Rectangle(0)
+		imd.Push(b.pos)
 	}
+	imd.Circle(1, 3)
 }
 
 func main() {

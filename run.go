@@ -27,11 +27,10 @@ func run() {
 	var bullets = make([]*bullet, nb*2, nb*40)
 
 	for i := -10; i < nb; i++ {
-		var x float64
-		x = float64(i * 25)
 		bullets[i+nb] = &bullet{
-			rect: pixel.R(x-5, -7, x+5, 7),
+			pos:  pixel.Vec{X: 0, Y: 0},
 			dest: pixel.Vec{X: -20 * float64(i), Y: 480},
+			vel:  pixel.Lerp(pixel.ZV, pixel.Vec{X: -20 * float64(i), Y: 480}, 0.05),
 		}
 	}
 
@@ -41,6 +40,8 @@ func run() {
 	// hardcoded level
 	platforms := []*platform{
 		{rect: pixel.R(-1024/2, 420, 1024/2, 440)},
+		{rect: pixel.R(-1099/2, 450, 1099/2, 480)},
+		{rect: pixel.R(-1024/2, -300, 1524/2, -240)},
 	}
 	for i := range platforms {
 		platforms[i].color = randomNiceColor()
@@ -51,7 +52,7 @@ func run() {
 	imd.Precision = 32
 
 	lastBulletSpawn := 0
-	bulletSpawnDiffFrames := 3
+	bulletSpawnDiffFrames := 1
 
 	last := time.Now()
 	for !win.Closed() {
@@ -61,8 +62,9 @@ func run() {
 		// spawn new bullets towards mouse
 		if lastBulletSpawn >= bulletSpawnDiffFrames {
 			phys.bullets = append(phys.bullets, &bullet{
-				rect: pixel.R(-5, -7, 5, 7),
+				pos:  pixel.ZV,
 				dest: win.MousePosition(),
+				vel:  pixel.Lerp(pixel.ZV, win.MousePosition(), 0.1),
 			})
 			lastBulletSpawn = 0
 		} else {
