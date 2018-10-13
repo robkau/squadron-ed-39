@@ -24,3 +24,16 @@ func redColor() pixel.RGBA {
 	b := 0.0
 	return pixel.RGB(r, g, b)
 }
+
+func deleteBullet(i int, b []*bullet) {
+	b[i] = b[len(b)-1]
+	b[len(b)-1] = nil
+	b = b[:len(b)-1]
+}
+
+func Abs(x float64) float64 {
+	if x < 0 {
+		return -x
+	}
+	return x
+}

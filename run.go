@@ -40,7 +40,7 @@ func run() {
 
 	// hardcoded level
 	platforms := []*platform{
-		{rect: pixel.R(-1024/2, 480, 1024/2, 500)},
+		{rect: pixel.R(-1024/2, 420, 1024/2, 440)},
 	}
 	for i := range platforms {
 		platforms[i].color = randomNiceColor()
@@ -51,7 +51,7 @@ func run() {
 	imd.Precision = 32
 
 	lastBulletSpawn := 0
-	bulletSpawnDiffFrames := 1
+	bulletSpawnDiffFrames := 3
 
 	last := time.Now()
 	for !win.Closed() {

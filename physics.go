@@ -4,6 +4,8 @@ import (
 	"github.com/faiface/pixel"
 )
 
+const MAX_BULLET_BOUND float64 = 3000
+
 type objects struct {
 	bullets []*bullet
 }
@@ -15,11 +17,11 @@ type bullet struct {
 	collided bool
 }
 
-var bulletSlowdownFactor float64 = 3
+var bulletSlowdownFactor float64 = 8
 
 func (objects *objects) update(dt float64, ctrl pixel.Vec, platforms *[]*platform) {
-	for _, b := range objects.bullets {
-		if b.collided {
+	for bi, b := range objects.bullets {
+		if b == nil || b.collided {
 			continue
 		}
 
@@ -29,7 +31,12 @@ func (objects *objects) update(dt float64, ctrl pixel.Vec, platforms *[]*platfor
 		for _, p := range *platforms {
 			if collide := checkBulletCollision(b, p, dt); collide {
 				b.rect = b.rect.Moved(pixel.V(0, 0))
+				deleteBullet(bi, objects.bullets)
 			} else {
+				if Abs(b.rect.Center().X) > MAX_BULLET_BOUND || Abs(b.rect.Center().Y) > MAX_BULLET_BOUND {
+					deleteBullet(bi, objects.bullets)
+					continue
+				}
 				b.rect = b.rect.Moved(b.vel.Scaled(dt))
 			}
 		}
@@ -44,7 +51,7 @@ func checkBulletCollision(b *bullet, p *platform, dt float64) bool {
 		return false
 	}
 	b.collided = true
-	p.color = randomNiceColor()
+	p.color = redColor()
 	return true
 }
 

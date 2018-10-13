@@ -21,6 +21,9 @@ func (p *platform) draw(imd *imdraw.IMDraw) {
 func draw(imd *imdraw.IMDraw, phys *objects) {
 	imd.Color = redColor()
 	for _, b := range phys.bullets {
+		if b == nil || b.collided {
+			continue
+		}
 		imd.Push(b.rect.Min, b.rect.Max)
 		imd.Rectangle(0)
 	}
