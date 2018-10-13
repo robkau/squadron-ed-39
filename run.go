@@ -60,21 +60,20 @@ func run() {
 		step:   1.0 / 7,
 	}
 
-	canvas := pixelgl.NewCanvas(pixel.R(-160/2, -120/2, 160/2, 120/2))
+	canvas := pixelgl.NewCanvas(pixel.R(-320/2, -240/2, 320/2, 2420/2))
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
-	camPos := pixel.ZV
+	//camPos := pixel.ZV
 
 	last := time.Now()
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
 
-		// lerp the camera position towards the gopher
-		camPos = pixel.Lerp(camPos, phys.rect.Center(), 1-math.Pow(1.0/128, dt))
-		cam := pixel.IM.Moved(camPos.Scaled(-1))
-		canvas.SetMatrix(cam)
+		//camPos = pixel.Lerp(camPos, phys.rect.Center(), 1-math.Pow(1.0/128, dt))
+		//cam := pixel.IM.Moved(camPos.Scaled(-1))
+		canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
 
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
