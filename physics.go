@@ -14,26 +14,23 @@ type bullet struct {
 func (objects *objects) update(dt float64, ctrl pixel.Vec, platforms []platform) {
 	for _, b := range objects.bullets {
 		b.vel.X = 0
-		b.vel.Y = 25
-		b.rect = b.rect.Moved(b.vel.Scaled(dt))
+		b.vel.Y = 250
+		for _, p := range platforms {
+			if b.rect.Max.X <= p.rect.Min.X || b.rect.Min.X >= p.rect.Max.X {
+				b.rect = b.rect.Moved(b.vel.Scaled(dt))
+				continue
+			}
+			if b.rect.Max.Y+b.vel.Y*dt < p.rect.Min.Y {
+				b.rect = b.rect.Moved(b.vel.Scaled(dt))
+				continue
+			}
+			b.vel.Y = 0
+			b.rect = b.rect.Moved(pixel.V(0, 0))
+		}
 	}
 
 	// check collisions against each platform
-	/*
-		if gp.vel.Y <= 0 {
-			for _, p := range platforms {
-				if gp.rect.Max.X <= p.rect.Min.X || gp.rect.Min.X >= p.rect.Max.X {
-					continue
-				}
-				if gp.rect.Min.Y > p.rect.Max.Y || gp.rect.Min.Y < p.rect.Max.Y+gpc.vel.Y*dt {
-					continue
-				}
-				gp.vel.Y = 0
-				gp.rect = gp.rect.Moved(pixel.V(0, p.rect.Max.Y-gp.rect.Min.Y))
-				gp.ground = true
-			}
-		}
-	*/
+
 }
 
 //https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
