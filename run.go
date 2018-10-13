@@ -37,7 +37,7 @@ func run() {
 
 	// hardcoded level
 	platforms := []platform{
-		{rect: pixel.R(-50, -34, 50, -32)},
+		{rect: pixel.R(-1024/2, -800, 1024/2, -780)},
 		{rect: pixel.R(20, 0, 70, 2)},
 		{rect: pixel.R(-100, 10, -50, 12)},
 		{rect: pixel.R(120, -22, 140, -20)},
@@ -60,7 +60,10 @@ func run() {
 		step:   1.0 / 7,
 	}
 
-	canvas := pixelgl.NewCanvas(pixel.R(-320/2, -240/2, 320/2, 2420/2))
+	gol.cols[0] = redColor()
+	gol.cols[1] = redColor()
+
+	canvas := pixelgl.NewCanvas(pixel.R(-800, -800, 800, 800))
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
@@ -100,7 +103,6 @@ func run() {
 
 		// update the physics and animation
 		phys.update(dt, ctrl, platforms)
-		gol.update(dt)
 
 		// draw the scene to the canvas using IMDraw
 		canvas.Clear(colornames.Black)

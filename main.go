@@ -18,53 +18,6 @@ func (p *platform) draw(imd *imdraw.IMDraw) {
 	imd.Rectangle(0)
 }
 
-type gopherPhys struct {
-	gravity   float64
-	runSpeed  float64
-	jumpSpeed float64
-
-	rect   pixel.Rect
-	vel    pixel.Vec
-	ground bool
-}
-
-func (gp *gopherPhys) update(dt float64, ctrl pixel.Vec, platforms []platform) {
-	// apply controls
-	switch {
-	case ctrl.X < 0:
-		gp.vel.X = -gp.runSpeed
-	case ctrl.X > 0:
-		gp.vel.X = +gp.runSpeed
-	default:
-		gp.vel.X = 0
-	}
-
-	// apply gravity and velocity
-	gp.vel.Y += gp.gravity * dt
-	gp.rect = gp.rect.Moved(gp.vel.Scaled(dt))
-
-	// check collisions against each platform
-	gp.ground = false
-	if gp.vel.Y <= 0 {
-		for _, p := range platforms {
-			if gp.rect.Max.X <= p.rect.Min.X || gp.rect.Min.X >= p.rect.Max.X {
-				continue
-			}
-			if gp.rect.Min.Y > p.rect.Max.Y || gp.rect.Min.Y < p.rect.Max.Y+gp.vel.Y*dt {
-				continue
-			}
-			gp.vel.Y = 0
-			gp.rect = gp.rect.Moved(pixel.V(0, p.rect.Max.Y-gp.rect.Min.Y))
-			gp.ground = true
-		}
-	}
-
-	// jump if on the ground and the player wants to jump
-	if gp.ground && ctrl.Y > 0 {
-		gp.vel.Y = gp.jumpSpeed
-	}
-}
-
 type animState int
 
 type gopherAnim struct {
@@ -95,7 +48,7 @@ type goal struct {
 	step   float64
 
 	counter float64
-	cols    [5]pixel.RGBA
+	cols    [2]pixel.RGBA
 }
 
 func (g *goal) update(dt float64) {
@@ -105,12 +58,13 @@ func (g *goal) update(dt float64) {
 		for i := len(g.cols) - 2; i >= 0; i-- {
 			g.cols[i+1] = g.cols[i]
 		}
-		g.cols[0] = randomNiceColor()
+
 	}
 }
 
 func (g *goal) draw(imd *imdraw.IMDraw) {
 	for i := len(g.cols) - 1; i >= 0; i-- {
+
 		imd.Color = g.cols[i]
 		imd.Push(g.pos)
 		imd.Circle(float64(i+1)*g.radius/float64(len(g.cols)), 0)
