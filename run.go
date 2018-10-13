@@ -23,17 +23,19 @@ func run() {
 		panic(err)
 	}
 
-	phys := &gopherPhys{
-		gravity:   -512,
-		runSpeed:  64,
-		jumpSpeed: 192,
-		rect:      pixel.R(-6, -7, 6, 7),
+	nb := 5
+	var bullets = make([]*bullet, nb)
+
+	for i := 0; i < nb; i++ {
+		var x float64
+		x = float64(i * 25)
+		bullets[i] = &bullet{
+			rect: pixel.R(x-5, -7, x+5, 7),
+		}
 	}
 
-	anim := &gopherAnim{
-		rate: 1.0 / 10,
-		dir:  +1,
-	}
+	var phys = new(objects)
+	phys.bullets = bullets
 
 	// hardcoded level
 	platforms := []platform{
@@ -79,24 +81,8 @@ func run() {
 			dt /= 8
 		}
 
-		// restart the level on pressing enter
-		if win.JustPressed(pixelgl.KeyEnter) {
-			phys.rect = phys.rect.Moved(phys.rect.Center().Scaled(-1))
-			phys.vel = pixel.ZV
-		}
-
 		// control the gopher with keys
 		ctrl := pixel.ZV
-		if win.Pressed(pixelgl.KeyLeft) {
-			ctrl.X--
-		}
-		if win.Pressed(pixelgl.KeyRight) {
-			ctrl.X++
-		}
-		if win.JustPressed(pixelgl.KeyUp) {
-			ctrl.Y = 1
-		}
-
 		// update the physics and animation
 		phys.update(dt, ctrl, platforms)
 
@@ -106,8 +92,8 @@ func run() {
 		for _, p := range platforms {
 			p.draw(imd)
 		}
+		draw(imd, phys)
 		gol.draw(imd)
-		anim.draw(imd, phys)
 		imd.Draw(canvas)
 
 		// stretch the canvas to the window

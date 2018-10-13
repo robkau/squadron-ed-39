@@ -18,30 +18,6 @@ func (p *platform) draw(imd *imdraw.IMDraw) {
 	imd.Rectangle(0)
 }
 
-type animState int
-
-type gopherAnim struct {
-	rate float64
-
-	state   animState
-	counter float64
-	dir     float64
-
-	frame pixel.Rect
-
-	sprite *pixel.Sprite
-}
-
-func (ga *gopherAnim) draw(imd *imdraw.IMDraw, phys *gopherPhys) {
-	if ga.sprite == nil {
-		ga.sprite = pixel.NewSprite(nil, pixel.Rect{})
-	}
-
-	imd.Color = redColor()
-	imd.Push(phys.rect.Min, phys.rect.Max)
-	imd.Rectangle(0)
-}
-
 type goal struct {
 	pos    pixel.Vec
 	radius float64
@@ -49,6 +25,14 @@ type goal struct {
 
 	counter float64
 	cols    [2]pixel.RGBA
+}
+
+func draw(imd *imdraw.IMDraw, phys *objects) {
+	imd.Color = redColor()
+	for _, b := range phys.bullets {
+		imd.Push(b.rect.Min, b.rect.Max)
+		imd.Rectangle(0)
+	}
 }
 
 func (g *goal) update(dt float64) {
