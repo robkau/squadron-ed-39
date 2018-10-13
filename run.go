@@ -67,16 +67,12 @@ func run() {
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
-	//camPos := pixel.ZV
-
 	last := time.Now()
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
 
-		//camPos = pixel.Lerp(camPos, phys.rect.Center(), 1-math.Pow(1.0/128, dt))
-		//cam := pixel.IM.Moved(camPos.Scaled(-1))
-		canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
+		//canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
 
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
