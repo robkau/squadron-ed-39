@@ -26,8 +26,8 @@ func redColor() pixel.RGBA {
 }
 
 func deleteBullet(i int, b []*bullet) {
-	b[i] = b[len(b)-1]
-	b[len(b)-1] = nil
+	copy(b[i:], b[i+1:])
+	b[len(b)-1] = nil // or the zero value of T
 	b = b[:len(b)-1]
 }
 

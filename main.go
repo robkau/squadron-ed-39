@@ -26,7 +26,7 @@ func draw(imd *imdraw.IMDraw, phys *objects) {
 		}
 		imd.Push(b.pos)
 	}
-	imd.Circle(1, 3)
+	imd.Circle(1, 2)
 }
 
 func main() {

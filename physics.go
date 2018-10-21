@@ -4,7 +4,7 @@ import (
 	"github.com/faiface/pixel"
 )
 
-const MAX_BULLET_BOUND float64 = 3000
+const MAX_BULLET_BOUND float64 = 1500
 
 type objects struct {
 	bullets []*bullet
