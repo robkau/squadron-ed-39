@@ -2,12 +2,19 @@ package main
 
 import (
 	"github.com/faiface/pixel"
+	"image/color"
 )
 
 const MAX_BULLET_BOUND float64 = 1500
 
 type objects struct {
 	bullets []*bullet
+}
+
+type platform struct {
+	rect   pixel.Rect
+	color  color.Color
+	health int
 }
 
 type bullet struct {

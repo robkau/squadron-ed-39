@@ -1,0 +1,27 @@
+package main
+
+import (
+	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel/pixelgl"
+)
+
+func (p *platform) draw(imd *imdraw.IMDraw) {
+	imd.Color = p.color
+	imd.Push(p.rect.Min, p.rect.Max)
+	imd.Rectangle(0)
+}
+
+func draw(imd *imdraw.IMDraw, phys *objects) {
+	imd.Color = redColor()
+	for _, b := range phys.bullets {
+		if b == nil || b.collided {
+			continue
+		}
+		imd.Push(b.pos)
+	}
+	imd.Circle(1, 2)
+}
+
+func main() {
+	pixelgl.Run(run)
+}

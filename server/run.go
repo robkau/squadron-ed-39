@@ -53,7 +53,7 @@ func run() {
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
-	fps := time.Tick(time.Second / 144)
+	fps := time.Tick(time.Second / 60)
 	bulletSpawn := time.Tick(time.Second / 30)
 	var bulletSpeedFactor float64 = 0.15
 	frames := 0
