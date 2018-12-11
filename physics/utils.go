@@ -1,4 +1,4 @@
-package main
+package physics
 
 import (
 	"github.com/faiface/pixel"
@@ -23,12 +23,6 @@ func redColor() pixel.RGBA {
 	g := 0.0
 	b := 0.0
 	return pixel.RGB(r, g, b)
-}
-
-func deleteBullet(i int, b []*bullet) {
-	copy(b[i:], b[i+1:])
-	b[len(b)-1] = nil // or the zero value of T
-	b = b[:len(b)-1]
 }
 
 func Abs(x float64) float64 {

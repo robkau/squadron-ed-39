@@ -10,6 +10,7 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	"github.com/gobuffalo/packr"
+	"github.com/robkau/squadron-ed-39/physics"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 	"log"
@@ -32,48 +33,26 @@ func run() {
 	}
 	win.SetSmooth(true)
 
-	nb := 10
-	var bullets = make([]*bullet, nb*40000)
-
-	for i := -10; i < nb; i++ {
-		bullets = append(bullets, &bullet{
-			pos:  pixel.Vec{X: 0, Y: 0},
-			dest: pixel.Vec{X: -20 * float64(i), Y: 480},
-			vel:  pixel.Lerp(pixel.ZV, pixel.Vec{X: -20 * float64(i), Y: 480}, 0.05),
-		})
-	}
-
-	var phys = new(objects)
-	phys.bullets = bullets
-
-	// hardcoded level
-	platforms := []*platform{
-		{rect: pixel.R(-1024/2, -300, 1524/2, -240), health: 30},
-	}
-	for i := range platforms {
-		platforms[i].color = randomNiceColor()
-	}
+	var world = physics.NewWorld()
 
 	canvas := pixelgl.NewCanvas(pixel.R(-800, -500, 800, 500))
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
-	fps := time.Tick(time.Second / 60)
-	bulletSpawn := time.Tick(time.Second / 30)
-	var bulletSpeedFactor float64 = 0.15
+	fps := time.Tick(time.Second / 144)
+
 	frames := 0
 	second := time.Tick(time.Second)
-	last := time.Now()
 
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
+
 	txt := text.New(pixel.V(-750, 450), atlas)
 	txt.Color = colornames.Lightgrey
 
-	txt.WriteString("Health: ")
-	txt.WriteString("SUPREME")
-
-	// play the background song twice
+	// play the background song
 	go func() {
+		return // this experiment is disabled for now
+		// it will extract music assets packed into the binary and play them as background sound
 		box := packr.NewBox("./assets")
 
 		// Decode the packed .mp3 file
@@ -95,58 +74,44 @@ func run() {
 			close(playing)
 		})))
 		<-playing
-
-		// Decode the packed .mp3 file
-		f, err = box.Open("song.mp3")
-		s, format, _ = mp3.Decode(f)
-
-		// Play again
-		speaker.Play(beep.Seq(s, beep.Callback(func() {
-			close(playing)
-		})))
-		<-playing
 	}()
 
+	bulletSpawner := time.NewTicker(physics.BulletSpawnInterval)
 	go func() {
-		// spawn new bullets towards mouse one is ready
-		// todo goroutine
-		for {
-			select {
-			case <-bulletSpawn:
-				mp := win.MousePosition()
-				phys.bullets = append(phys.bullets, &bullet{
-					pos:  pixel.ZV,
-					dest: mp,
-					vel:  pixel.Lerp(pixel.ZV, mp, bulletSpeedFactor),
-				})
-			default:
+		// spawn new bullet towards mouse
+		for range bulletSpawner.C {
+			mp := win.MousePosition()
+			v := pixel.Lerp(pixel.ZV, mp, physics.BulletSpeedFactor)
+			b := &physics.Bullet{
+				Pos:  pixel.ZV,
+				Dest: mp,
+				Vel:  v,
 			}
+			physics.EnforceMinBulletSpeed(b)
+			world.SpawnBullet(b)
 		}
 	}()
 
 	for !win.Closed() {
-		dt := time.Since(last).Seconds()
-		last = time.Now()
+		dt := physics.Dt
 
 		//canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
 
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
-			dt /= 8
+			dt /= physics.SlowdownFactor
 		}
 
 		// control the gopher with keys
 		ctrl := pixel.ZV
 		// update the physics and animation
-		phys.update(dt, ctrl, &platforms)
+		world.Update(dt, ctrl)
 
 		// draw the scene to the canvas using IMDraw
 		canvas.Clear(colornames.Black)
 		imd.Clear()
-		for _, p := range platforms {
-			p.draw(imd)
-		}
-		draw(imd, phys)
+
+		world.Draw(imd)
 		imd.Draw(canvas)
 
 		// stretch the canvas to the window
