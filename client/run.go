@@ -76,6 +76,7 @@ func run() {
 		<-playing
 	}()
 
+	// spawn bullets from cursor
 	bulletSpawner := time.NewTicker(physics.BulletSpawnInterval)
 	go func() {
 		// spawn new bullet towards mouse
@@ -102,7 +103,6 @@ func run() {
 			dt /= physics.SlowdownFactor
 		}
 
-		// control the gopher with keys
 		ctrl := pixel.ZV
 		// update the physics and animation
 		world.Update(dt, ctrl)

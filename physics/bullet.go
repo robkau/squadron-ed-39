@@ -6,8 +6,14 @@ func EnforceMinBulletSpeed(b *Bullet) {
 	}
 }
 
-func deleteBullet(i int, b []*Bullet) {
-	copy(b[i:], b[i+1:])
-	b[len(b)-1] = nil // or the zero value of T
-	b = b[:len(b)-1]
+func deleteBullets(bullets *[]*Bullet) {
+	// todo: debug
+	j := 0
+	for _, b := range *bullets {
+		if !b.collided || (Abs(b.Pos.X) < MAX_BULLET_BOUND && Abs(b.Pos.Y) < MAX_BULLET_BOUND) {
+			(*bullets)[j] = b
+			j++
+		}
+	}
+	*bullets = (*bullets)[:j]
 }
