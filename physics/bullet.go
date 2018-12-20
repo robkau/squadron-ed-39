@@ -7,13 +7,13 @@ func EnforceMinBulletSpeed(b *Bullet) {
 }
 
 func deleteBullets(bullets *[]*Bullet) {
-	// todo: debug
-	j := 0
-	for _, b := range *bullets {
-		if !b.collided || (Abs(b.Pos.X) < MAX_BULLET_BOUND && Abs(b.Pos.Y) < MAX_BULLET_BOUND) {
-			(*bullets)[j] = b
-			j++
+	// todo: profile and record heap allocations
+	// next: profile again with bullet pool
+	for i, b := range *bullets {
+		if b != nil && !b.collided || (Abs(b.Pos.X) < MAX_BULLET_BOUND && Abs(b.Pos.Y) < MAX_BULLET_BOUND) {
+			(*bullets)[i] = (*bullets)[len(*bullets)-1]
+			(*bullets)[len(*bullets)-1] = nil
+			*bullets = (*bullets)[:len(*bullets)-1]
 		}
 	}
-	*bullets = (*bullets)[:j]
 }
