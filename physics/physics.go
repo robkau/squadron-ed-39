@@ -11,7 +11,7 @@ import (
 const (
 	Dt                          = 0.05 // global simulation timestep
 	MAX_BULLET_BOUND    float64 = 1500
-	BulletMinSpeed      float64 = 4
+	BulletMinSpeed      float64 = 12
 	BulletSpawnInterval         = time.Second / 10
 	BulletSpeedFactor   float64 = 0.05
 	SlowdownFactor              = 8
@@ -45,6 +45,7 @@ func NewWorld() *world {
 }
 
 func (world *world) Update(dt float64, ctrl pixel.Vec) {
+	deadBullet := false
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
 			continue
@@ -55,7 +56,6 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 			panic(fmt.Sprintf("There is a dead bullet at %f, %f", b.Pos.X, b.Pos.Y))
 		}
 
-		deadBullet := false
 		if Abs(b.Pos.X) > MAX_BULLET_BOUND || Abs(b.Pos.Y) > MAX_BULLET_BOUND {
 			deadBullet = true
 			continue
@@ -79,13 +79,12 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 			deletePlatforms(&world.platforms)
 		}
 
-		// clear the bullets list if any collided or flew too far away
-		if deadBullet {
-			deleteBullets(&world.bullets)
-		}
-
 		// update bullet position if it's still in flight
 		b.Pos = b.Pos.Add(b.Vel.Scaled(dt))
+	}
+	// clear the bullets list if any collided or flew too far away
+	if deadBullet {
+		deleteBullets(&world.bullets)
 	}
 }
 

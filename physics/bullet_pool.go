@@ -4,14 +4,13 @@ type BulletPool struct {
 	pool chan *Bullet
 }
 
-// NewPool creates a new pool of Clients.
 func NewPool(max int) *BulletPool {
 	return &BulletPool{
 		pool: make(chan *Bullet, max),
 	}
 }
 
-// Borrow a Client from the pool.
+// borrow from the pool.
 func (p *BulletPool) Borrow() *Bullet {
 	var b *Bullet
 	select {
@@ -23,7 +22,7 @@ func (p *BulletPool) Borrow() *Bullet {
 	return b
 }
 
-// Return returns a Client to the pool.
+// returns to the pool.
 func (p *BulletPool) Return(b *Bullet) {
 	b.collided = false
 	b.Dest.X = 0

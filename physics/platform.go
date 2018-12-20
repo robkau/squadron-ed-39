@@ -1,24 +1,13 @@
 package physics
 
 func deletePlatforms(platforms *[]*platform) {
-	// todo: debug
-	j := 0
-	for _, p := range *platforms {
-		if p.health > 0 {
-			(*platforms)[j] = p
-			j++
+	for i, p := range *platforms {
+		if p != nil && p.health <= 0 {
+			(*platforms)[i] = (*platforms)[len(*platforms)-1]
+			// dereference dead platform pointer
+			(*platforms)[len(*platforms)-1] = nil
+			// shrink slice by 1
+			*platforms = (*platforms)[:len(*platforms)-1]
 		}
 	}
-	*platforms = (*platforms)[:j]
-
-	/*
-		todo: compare performance
-		// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
-		b := (*platforms)[:0]
-		for _, p := range *platforms {
-			if p.health >0 {
-				b = append(b,
-			}
-		}
-	*/
 }
