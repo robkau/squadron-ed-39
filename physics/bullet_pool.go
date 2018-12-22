@@ -10,8 +10,7 @@ func NewPool(max int) *BulletPool {
 	}
 }
 
-// borrow from the pool.
-func (p *BulletPool) Borrow() *Bullet {
+func (p *BulletPool) Get() *Bullet {
 	var b *Bullet
 	select {
 	case b = <-p.pool:
@@ -22,8 +21,7 @@ func (p *BulletPool) Borrow() *Bullet {
 	return b
 }
 
-// returns to the pool.
-func (p *BulletPool) Return(b *Bullet) {
+func (p *BulletPool) Put(b *Bullet) {
 	b.collided = false
 	b.Dest.X = 0
 	b.Dest.Y = 0

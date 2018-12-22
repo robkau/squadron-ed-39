@@ -6,7 +6,7 @@ func EnforceMinBulletSpeed(b *Bullet) {
 	}
 }
 
-func deleteBullets(bullets *[]*Bullet) {
+func deleteBullets(bullets *[]*Bullet, bp *BulletPool) {
 	// todo: profile and record heap allocations
 	// next: profile again with bullet pool
 	for i, b := range *bullets {
@@ -14,7 +14,7 @@ func deleteBullets(bullets *[]*Bullet) {
 			// move dead bullet to end of slice
 			(*bullets)[i] = (*bullets)[len(*bullets)-1]
 			// dereference dead bullet pointer
-			// todo: return to pool
+			bp.Put(b)
 			(*bullets)[len(*bullets)-1] = nil
 			// shrink slice by 1
 			*bullets = (*bullets)[:len(*bullets)-1]

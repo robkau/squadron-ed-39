@@ -5,21 +5,22 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"image/color"
-	"time"
 )
 
 const (
-	Dt                          = 0.05 // global simulation timestep
-	MAX_BULLET_BOUND    float64 = 1500
-	BulletMinSpeed      float64 = 12
-	BulletSpawnInterval         = time.Second / 10
-	BulletSpeedFactor   float64 = 0.05
-	SlowdownFactor              = 8
+	Dt                        = 0.05 // global simulation timestep
+	MAX_BULLET_BOUND  float64 = 1500
+	BulletMinSpeed    float64 = 10
+	BulletPoolSize            = 2000
+	BulletSpawnModulo         = 10
+	BulletSpeedFactor float64 = 0.05
+	SlowdownFactor            = 8
 )
 
 type world struct {
-	bullets   []*Bullet
-	platforms []*platform
+	bullets    []*Bullet
+	platforms  []*platform
+	BulletPool *BulletPool
 }
 
 type platform struct {
@@ -39,8 +40,9 @@ func NewWorld() *world {
 	platforms := make([]*platform, 0)
 	platforms = append(platforms, &platform{health: 50, rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, color: pixel.RGB(0.1, 0.5, 0.8)})
 	return &world{
-		bullets:   make([]*Bullet, 0),
-		platforms: platforms,
+		bullets:    make([]*Bullet, 0),
+		platforms:  platforms,
+		BulletPool: NewPool(BulletPoolSize),
 	}
 }
 
@@ -51,9 +53,8 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 			continue
 		}
 
-		// dead bullet wasting resources?
 		if b.Vel.X == 0 && b.Vel.Y == 0 {
-			panic(fmt.Sprintf("There is a dead bullet at %f, %f", b.Pos.X, b.Pos.Y))
+			panic(fmt.Sprintf("There is a stuck bullet at %f, %f", b.Pos.X, b.Pos.Y))
 		}
 
 		if Abs(b.Pos.X) > MAX_BULLET_BOUND || Abs(b.Pos.Y) > MAX_BULLET_BOUND {
@@ -64,7 +65,7 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 		// collision detection
 		deadPlatform := false
 		for _, p := range world.platforms {
-			if p.rect.Contains(b.Pos) && p.health > 0 { // do not hit already killed platforms before removal
+			if p.rect.Contains(b.Pos) && p.health > 0 {
 				b.collided = true
 				deadBullet = true
 				p.health -= 1
@@ -79,12 +80,12 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 			deletePlatforms(&world.platforms)
 		}
 
-		// update bullet position if it's still in flight
+		// update bullet position
 		b.Pos = b.Pos.Add(b.Vel.Scaled(dt))
 	}
 	// clear the bullets list if any collided or flew too far away
 	if deadBullet {
-		deleteBullets(&world.bullets)
+		deleteBullets(&world.bullets, world.BulletPool)
 	}
 }
 

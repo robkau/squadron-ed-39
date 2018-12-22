@@ -16,11 +16,29 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
+	"runtime/pprof"
 	"time"
 )
 
+const (
+	MemDumpIteration = 2000
+)
+
 func run() {
+	iteration := 0
 	rand.Seed(time.Now().UnixNano())
+	_, debugSet := os.LookupEnv("sq39_debug")
+	if debugSet {
+		cpuProfile := "cpu.txt"
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "Squadron E.D. 39",
@@ -76,41 +94,48 @@ func run() {
 		<-playing
 	}()
 
+	// todo: move this to spawn bullets in each loop call
+	// todo: make a per-dt spawn instead of time spawn
+
 	// spawn bullets from cursor
-	bulletSpawner := time.NewTicker(physics.BulletSpawnInterval)
-	go func() {
-		// spawn new bullet towards mouse
-		for range bulletSpawner.C {
-			mp := win.MousePosition()
-			v := pixel.Lerp(pixel.ZV, mp, physics.BulletSpeedFactor)
-			b := &physics.Bullet{
-				Pos:  pixel.ZV,
-				Dest: mp,
-				Vel:  v,
-			}
-			physics.EnforceMinBulletSpeed(b)
-			world.SpawnBullet(b)
-		}
-	}()
+	var mp pixel.Vec
+	var v pixel.Vec
+	var b *physics.Bullet
+	var bsp pixel.Vec
 
 	for !win.Closed() {
 		dt := physics.Dt
-
-		//canvas.SetMatrix(pixel.Matrix{1, 0, 0, 1, 0, 0})
-
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
 			dt /= physics.SlowdownFactor
 		}
 
+		if win.JustPressed(pixelgl.MouseButtonLeft) {
+			bsp = win.MousePosition()
+		}
+
 		ctrl := pixel.ZV
-		// update the physics and animation
+
+		if iteration%physics.BulletSpawnModulo == 0 {
+			mp = win.MousePosition()
+			v = pixel.Lerp(bsp, mp, physics.BulletSpeedFactor)
+			v = v.Sub(bsp) // rebase velocity calculation to origin
+			b = world.BulletPool.Get()
+			b.Pos = bsp
+			b.Dest.X = mp.X
+			b.Dest.Y = mp.Y
+			b.Vel.X = v.X
+			b.Vel.Y = v.Y
+			physics.EnforceMinBulletSpeed(b)
+			world.SpawnBullet(b)
+		}
+
+		// step physics forward
 		world.Update(dt, ctrl)
 
-		// draw the scene to the canvas using IMDraw
+		// draw updated scene to
 		canvas.Clear(colornames.Black)
 		imd.Clear()
-
 		world.Draw(imd)
 		imd.Draw(canvas)
 
@@ -127,12 +152,23 @@ func run() {
 
 		win.Update()
 
+		iteration++
 		frames++
 		select {
 		case <-second:
 			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, frames))
 			frames = 0
 		case <-fps:
+		}
+
+		if iteration == MemDumpIteration && debugSet {
+			fp := "mem.mprof"
+			f, err := os.Create(fp)
+			if err != nil {
+				log.Fatal(err)
+			}
+			pprof.WriteHeapProfile(f)
+			f.Close()
 		}
 	}
 }
