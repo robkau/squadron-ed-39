@@ -7,17 +7,19 @@ import (
 )
 
 const (
-	Dt                        = 0.05 // global simulation timestep
-	MAX_BULLET_BOUND  float64 = 1500
-	BulletMinSpeed    float64 = 15
-	BulletPoolSize            = 2000
-	BulletSpawnModulo         = 10
-	BulletSpeedFactor float64 = 0.06
-	SlowdownFactor            = 8
-	FpsTarget                 = 60
+	Dt                             = 0.05 // global simulation timestep
+	MAX_BULLET_BOUND       float64 = 1500
+	BulletMinSpeed         float64 = 15
+	BulletPoolSize                 = 2000
+	BulletSpawnModulo              = 10
+	BulletSpawnerMoveSpeed         = 2.5
+	BulletSpeedFactor      float64 = 0.06
+	SlowdownFactor                 = 8
+	FpsTarget                      = 60
 )
 
 type world struct {
+	shooter    *BulletSpawner
 	bullets    []*Bullet
 	platforms  []*platform
 	BulletPool *BulletPool
@@ -27,13 +29,31 @@ func NewWorld() *world {
 	platforms := make([]*platform, 0)
 	platforms = append(platforms, &platform{Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
 	return &world{
+		shooter:    &BulletSpawner{},
 		bullets:    make([]*Bullet, 0),
 		platforms:  platforms,
 		BulletPool: NewPool(BulletPoolSize),
 	}
 }
 
-func (world *world) Update(dt float64, ctrl pixel.Vec) {
+func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
+	// spawn new bullets
+	if iteration%BulletSpawnModulo == 0 {
+		v := pixel.Lerp(world.shooter.Pos, mp, BulletSpeedFactor)
+		v = v.Sub(world.shooter.Pos) // rebase velocity calculation to origin
+		b := world.BulletPool.Get()
+		b.Pos = world.shooter.Pos
+		b.Dest.X = mp.X
+		b.Dest.Y = mp.Y
+		b.Vel.X = v.X
+		b.Vel.Y = v.Y
+		EnforceMinBulletSpeed(b)
+		world.SpawnBullet(b)
+	}
+
+	// update world
+	world.shooter.Walk()
+
 	deadBullet := false
 	for _, b := range world.bullets {
 		if b == nil || b.collided {

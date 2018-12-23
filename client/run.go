@@ -66,7 +66,7 @@ func run() {
 	// play the background song
 	go func() {
 		return // this experiment is disabled for now
-		// it will extract music assets packed into the binary and play them as background sound
+		// it will extract music assets packed into the binary and play them in the background
 		box := packr.NewBox("./assets")
 
 		// Decode the packed .mp3 file
@@ -90,45 +90,21 @@ func run() {
 		<-playing
 	}()
 
-	// todo: move this to spawn bullets in each loop call
-	// todo: make a per-dt spawn instead of time spawn
-
-	// spawn bullets from cursor
-	var mp pixel.Vec
-	var v pixel.Vec
-	var b *physics.Bullet
-	var bsp pixel.Vec
-
 	for !win.Closed() {
 		dt := physics.Dt
+		mp := win.MousePosition()
+
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
 			dt /= physics.SlowdownFactor
 		}
 
-		// todo: left click to walk to a position, updating BSP along the path
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
-			bsp = win.MousePosition()
-		}
-
-		ctrl := pixel.ZV
-
-		if iteration%physics.BulletSpawnModulo == 0 {
-			mp = win.MousePosition()
-			v = pixel.Lerp(bsp, mp, physics.BulletSpeedFactor)
-			v = v.Sub(bsp) // rebase velocity calculation to origin
-			b = world.BulletPool.Get()
-			b.Pos = bsp
-			b.Dest.X = mp.X
-			b.Dest.Y = mp.Y
-			b.Vel.X = v.X
-			b.Vel.Y = v.Y
-			physics.EnforceMinBulletSpeed(b)
-			world.SpawnBullet(b)
+			world.MoveShooter(mp)
 		}
 
 		// step physics forward
-		world.Update(dt, ctrl)
+		world.Update(dt, mp, iteration)
 
 		// draw updated scene to
 		canvas.Clear(colornames.Black)
