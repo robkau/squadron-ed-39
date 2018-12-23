@@ -9,7 +9,7 @@ import (
 const (
 	Dt                             = 0.05 // global simulation timestep
 	MAX_BULLET_BOUND       float64 = 1500
-	BulletMinSpeed         float64 = 15
+	BulletMinSpeed         float64 = 30
 	BulletPoolSize                 = 2000
 	BulletSpawnModulo              = 10
 	BulletSpawnerMoveSpeed         = 2.5
@@ -39,16 +39,7 @@ func NewWorld() *world {
 func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
 	// spawn new bullets
 	if iteration%BulletSpawnModulo == 0 {
-		v := pixel.Lerp(world.shooter.Pos, mp, BulletSpeedFactor)
-		v = v.Sub(world.shooter.Pos) // rebase velocity calculation to origin
-		b := world.BulletPool.Get()
-		b.Pos = world.shooter.Pos
-		b.Dest.X = mp.X
-		b.Dest.Y = mp.Y
-		b.Vel.X = v.X
-		b.Vel.Y = v.Y
-		EnforceMinBulletSpeed(b)
-		world.SpawnBullet(b)
+		world.SpawnBullet(mp)
 	}
 
 	// update world
@@ -111,4 +102,8 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		imd.Push(p.Rect.Min, p.Rect.Max)
 		imd.Rectangle(0)
 	}
+
+	imd.Color = randomNiceColor()
+	imd.Push(world.shooter.Pos)
+	imd.Circle(5, 2)
 }

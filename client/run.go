@@ -103,6 +103,10 @@ func run() {
 			world.MoveShooter(mp)
 		}
 
+		if win.JustPressed(pixelgl.MouseButtonRight) {
+			world.BulletSpray(mp)
+		}
+
 		// step physics forward
 		world.Update(dt, mp, iteration)
 

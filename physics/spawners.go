@@ -10,12 +10,47 @@ type BulletSpawner struct {
 	// todo: control spawn rate with var here
 }
 
-func (world *world) SpawnBullet(b *Bullet) {
+func (world *world) SpawnBullet(dest pixel.Vec) {
+	v := pixel.Lerp(world.shooter.Pos, dest, BulletSpeedFactor)
+	v = v.Sub(world.shooter.Pos) // rebase velocity calculation to origin
+	b := world.BulletPool.Get()
+	b.Pos = world.shooter.Pos
+	b.Dest.X = dest.X
+	b.Dest.Y = dest.Y
+	b.Vel.X = v.X
+	b.Vel.Y = v.Y
+	EnforceMinBulletSpeed(b)
+	// apply ship momentum to launched bullets
+	//b.Vel = b.Vel.Add(world.shooter.Vel.Scaled(10))
 	world.bullets = append(world.bullets, b)
 }
 
 func (world *world) BulletSpray(dest pixel.Vec) {
-	// shoot shotgun blast towards dest from bsp
+	// todo: fix why it's off center
+	// todo: implement for odd number of bullets
+	firingLine := dest.Sub(world.shooter.Pos)
+	firingSpread := 1.0 / 6 //rad
+	numProjectiles := 6
+	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
+
+	for n := 0; n < numProjectiles; n++ {
+		// n even
+		if numProjectiles%2 == 0 {
+			// left arc
+			for j := -firingSpread; j < 0; j += firingSpreadIncrement {
+				world.SpawnBullet(firingLine.Rotated(-j))
+			}
+			// right arc
+			for j := -firingSpread; j < 0; j += firingSpreadIncrement {
+				world.SpawnBullet(firingLine.Rotated(j))
+			}
+			return
+		}
+		// n odd
+		// left arc
+		// center
+		// right arc
+	}
 }
 
 func (world *world) MoveShooter(dest pixel.Vec) {
