@@ -99,7 +99,7 @@ func run() {
 			dt /= physics.SlowdownFactor
 		}
 
-		if win.JustPressed(pixelgl.MouseButtonLeft) {
+		if win.JustPressed(pixelgl.MouseButtonLeft) || win.MouseScroll().Y != 0 {
 			world.MoveShooter(mp)
 		}
 

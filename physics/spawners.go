@@ -26,7 +26,6 @@ func (world *world) SpawnBullet(dest pixel.Vec) {
 }
 
 func (world *world) BulletSpray(dest pixel.Vec) {
-	// todo: fix why it's off center
 	// todo: implement for odd number of bullets
 	firingLine := dest.Sub(world.shooter.Pos)
 	firingSpread := 1.0 / 6 //rad
@@ -37,12 +36,12 @@ func (world *world) BulletSpray(dest pixel.Vec) {
 		// n even
 		if numProjectiles%2 == 0 {
 			// left arc
-			for j := -firingSpread; j < 0; j += firingSpreadIncrement {
-				world.SpawnBullet(firingLine.Rotated(-j))
+			for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
+				world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
 			}
 			// right arc
-			for j := -firingSpread; j < 0; j += firingSpreadIncrement {
-				world.SpawnBullet(firingLine.Rotated(j))
+			for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
+				world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
 			}
 			return
 		}
