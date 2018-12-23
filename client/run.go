@@ -21,10 +21,6 @@ import (
 	"time"
 )
 
-const (
-	MemDumpIteration = 2000
-)
-
 func run() {
 	iteration := 0
 	rand.Seed(time.Now().UnixNano())
@@ -57,7 +53,7 @@ func run() {
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
-	fps := time.Tick(time.Second / 144)
+	fps := time.Tick(time.Second / physics.FpsTarget)
 
 	frames := 0
 	second := time.Tick(time.Second)
@@ -110,6 +106,7 @@ func run() {
 			dt /= physics.SlowdownFactor
 		}
 
+		// todo: left click to walk to a position, updating BSP along the path
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
 			bsp = win.MousePosition()
 		}
@@ -161,7 +158,8 @@ func run() {
 		case <-fps:
 		}
 
-		if iteration == MemDumpIteration && debugSet {
+		// save memory dump with f9
+		if debugSet && win.JustPressed(pixelgl.KeyF9) {
 			fp := "mem.mprof"
 			f, err := os.Create(fp)
 			if err != nil {

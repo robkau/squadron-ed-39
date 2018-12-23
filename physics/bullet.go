@@ -1,5 +1,14 @@
 package physics
 
+import "github.com/faiface/pixel"
+
+type Bullet struct {
+	Pos      pixel.Vec
+	Vel      pixel.Vec
+	Dest     pixel.Vec
+	collided bool
+}
+
 func EnforceMinBulletSpeed(b *Bullet) {
 	if b.Vel.Len() < BulletMinSpeed {
 		b.Vel = b.Vel.Scaled(BulletMinSpeed / b.Vel.Len())

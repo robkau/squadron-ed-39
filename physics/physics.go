@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
-	"image/color"
 )
 
 const (
 	Dt                        = 0.05 // global simulation timestep
 	MAX_BULLET_BOUND  float64 = 1500
-	BulletMinSpeed    float64 = 10
+	BulletMinSpeed    float64 = 15
 	BulletPoolSize            = 2000
 	BulletSpawnModulo         = 10
-	BulletSpeedFactor float64 = 0.05
+	BulletSpeedFactor float64 = 0.06
 	SlowdownFactor            = 8
+	FpsTarget                 = 60
 )
 
 type world struct {
@@ -23,22 +23,9 @@ type world struct {
 	BulletPool *BulletPool
 }
 
-type platform struct {
-	rect   pixel.Rect
-	color  color.Color
-	health int
-}
-
-type Bullet struct {
-	Pos      pixel.Vec
-	Vel      pixel.Vec
-	Dest     pixel.Vec
-	collided bool
-}
-
 func NewWorld() *world {
 	platforms := make([]*platform, 0)
-	platforms = append(platforms, &platform{health: 50, rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, color: pixel.RGB(0.1, 0.5, 0.8)})
+	platforms = append(platforms, &platform{Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
 	return &world{
 		bullets:    make([]*Bullet, 0),
 		platforms:  platforms,
@@ -65,11 +52,11 @@ func (world *world) Update(dt float64, ctrl pixel.Vec) {
 		// collision detection
 		deadPlatform := false
 		for _, p := range world.platforms {
-			if p.rect.Contains(b.Pos) && p.health > 0 {
+			if p.Rect.Contains(b.Pos) && p.Health > 0 {
 				b.collided = true
 				deadBullet = true
-				p.health -= 1
-				if p.health <= 0 {
+				p.Health -= 1
+				if p.Health <= 0 {
 					deadPlatform = true
 				}
 				break
@@ -100,8 +87,8 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 	imd.Circle(1, 2)
 
 	for _, p := range world.platforms {
-		imd.Color = p.color
-		imd.Push(p.rect.Min, p.rect.Max)
+		imd.Color = p.Color
+		imd.Push(p.Rect.Min, p.Rect.Max)
 		imd.Rectangle(0)
 	}
 }
