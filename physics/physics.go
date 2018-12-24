@@ -8,10 +8,11 @@ import (
 
 const (
 	Dt                             = 0.05 // global simulation timestep
-	MAX_BULLET_BOUND       float64 = 1500
+	MaxBulletBound         float64 = 525
+	MaxWindowBound                 = 500
 	BulletMinSpeed         float64 = 30
 	BulletPoolSize                 = 2000
-	BulletSpawnModulo              = 10
+	BulletSpawnModulo              = 25
 	BulletSpawnerMoveSpeed         = 2.5
 	BulletSpeedFactor      float64 = 0.06
 	SlowdownFactor                 = 8
@@ -55,7 +56,7 @@ func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
 			panic(fmt.Sprintf("There is a stuck bullet at %f, %f", b.Pos.X, b.Pos.Y))
 		}
 
-		if Abs(b.Pos.X) > MAX_BULLET_BOUND || Abs(b.Pos.Y) > MAX_BULLET_BOUND {
+		if Abs(b.Pos.X) > MaxBulletBound || Abs(b.Pos.Y) > MaxBulletBound {
 			deadBullet = true
 			continue
 		}

@@ -38,7 +38,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "Squadron E.D. 39",
-		Bounds: pixel.R(-800, -500, 800, 500),
+		Bounds: pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound),
 		VSync:  false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
@@ -49,7 +49,7 @@ func run() {
 
 	var world = physics.NewWorld()
 
-	canvas := pixelgl.NewCanvas(pixel.R(-800, -500, 800, 500))
+	canvas := pixelgl.NewCanvas(pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound))
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 

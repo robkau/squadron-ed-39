@@ -29,26 +29,22 @@ func (world *world) BulletSpray(dest pixel.Vec) {
 	// todo: implement for odd number of bullets
 	firingLine := dest.Sub(world.shooter.Pos)
 	firingSpread := 1.0 / 6 //rad
-	numProjectiles := 6
+	numProjectiles := 10
 	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
 
 	for n := 0; n < numProjectiles; n++ {
-		// n even
-		if numProjectiles%2 == 0 {
-			// left arc
-			for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
-				world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
-			}
-			// right arc
-			for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
-				world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
-			}
-			return
-		}
-		// n odd
 		// left arc
-		// center
+		for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
+			world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
+		}
 		// right arc
+		for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
+			world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
+		}
+		// center
+		if numProjectiles%2 != 0 {
+			world.SpawnBullet(world.shooter.Pos.Add(firingLine))
+		}
 	}
 }
 
