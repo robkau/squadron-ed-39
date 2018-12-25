@@ -15,9 +15,10 @@ func EnforceMinBulletSpeed(b *Bullet) {
 	}
 }
 
-func deleteBullets(bullets *[]*Bullet, bp *BulletPool) {
+func deleteBullets(bullets *[]*Bullet, bp *BulletPool) int {
 	// todo: profile and record heap allocations
 	// next: profile again with bullet pool
+	removed := 0
 	for i, b := range *bullets {
 		if b != nil && (b.collided || (Abs(b.Pos.X) > MaxBulletBound || Abs(b.Pos.Y) > MaxBulletBound)) {
 			// move dead bullet to end of slice
@@ -27,6 +28,8 @@ func deleteBullets(bullets *[]*Bullet, bp *BulletPool) {
 			(*bullets)[len(*bullets)-1] = nil
 			// shrink slice by 1
 			*bullets = (*bullets)[:len(*bullets)-1]
+			removed += 1
 		}
 	}
+	return removed
 }

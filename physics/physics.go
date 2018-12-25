@@ -17,29 +17,12 @@ const (
 	BulletSpeedFactor      float64 = 0.06
 	SlowdownFactor                 = 8
 	FpsTarget                      = 60
+	maxBullets                     = 1000
 )
 
-type world struct {
-	shooter    *BulletSpawner
-	bullets    []*Bullet
-	platforms  []*platform
-	BulletPool *BulletPool
-}
-
-func NewWorld() *world {
-	platforms := make([]*platform, 0)
-	platforms = append(platforms, &platform{Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
-	return &world{
-		shooter:    &BulletSpawner{},
-		bullets:    make([]*Bullet, 0),
-		platforms:  platforms,
-		BulletPool: NewPool(BulletPoolSize),
-	}
-}
-
-func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
+func (world *world) Update(dt float64, mp pixel.Vec) {
 	// spawn new bullets
-	if iteration%BulletSpawnModulo == 0 {
+	if world.iteration%BulletSpawnModulo == 0 {
 		world.SpawnBullet(mp)
 	}
 
@@ -47,6 +30,7 @@ func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
 	world.shooter.Walk()
 
 	deadBullet := false
+	// todo: allocate nothing inside loop
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
 			continue
@@ -62,6 +46,7 @@ func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
 		}
 
 		// collision detection
+		// todo: quadtree instead of brute force
 		deadPlatform := false
 		for _, p := range world.platforms {
 			if p.Rect.Contains(b.Pos) && p.Health > 0 {
@@ -84,8 +69,10 @@ func (world *world) Update(dt float64, mp pixel.Vec, iteration int) {
 	}
 	// clear the bullets list if any collided or flew too far away
 	if deadBullet {
-		deleteBullets(&world.bullets, world.BulletPool)
+		world.bulletCounter -= deleteBullets(&world.bullets, world.BulletPool)
 	}
+
+	world.iteration += 1
 }
 
 func (world *world) Draw(imd *imdraw.IMDraw) {
@@ -96,7 +83,7 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		}
 		imd.Push(b.Pos)
 	}
-	imd.Circle(1, 2)
+	imd.Circle(3, 0)
 
 	for _, p := range world.platforms {
 		imd.Color = p.Color
@@ -104,7 +91,7 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		imd.Rectangle(0)
 	}
 
-	imd.Color = randomNiceColor()
+	imd.Color = pixel.RGB(0, 0.5, 1)
 	imd.Push(world.shooter.Pos)
-	imd.Circle(5, 2)
+	imd.Circle(5, 0)
 }
