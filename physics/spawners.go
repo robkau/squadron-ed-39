@@ -37,24 +37,30 @@ func (bsp *BulletSpawner) pickTarget(world *world) pixel.Vec {
 	return world.platforms[0].Pos().Add(world.platforms[0].Vel().Scaled(15))
 }
 
-func (world *world) BulletSpray(pos pixel.Vec, dest pixel.Vec) {
+func (world *world) BulletSpray(dest pixel.Vec) {
+	for _, sh := range world.shooters {
+		sh.BulletSpray(world, dest)
+	}
+}
+
+func (bsp *BulletSpawner) BulletSpray(world *world, dest pixel.Vec) {
 	// todo: implement for odd number of bullets
-	firingLine := dest.Sub(pos)
+	firingLine := dest.Sub(bsp.Pos())
 	firingSpread := 1.0 / 6 //rad
 	numProjectiles := 12
 	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
 
 	// left arc
 	for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
-		world.SpawnBullet(pos, pos.Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(bsp.Pos(), bsp.Pos().Add(firingLine.Rotated(-j)))
 	}
 	// right arc
 	for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
-		world.SpawnBullet(pos, pos.Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(bsp.Pos(), bsp.Pos().Add(firingLine.Rotated(-j)))
 	}
 	// center
 	if numProjectiles%2 != 0 {
-		world.SpawnBullet(pos, pos.Add(firingLine))
+		world.SpawnBullet(bsp.Pos(), bsp.Pos().Add(firingLine))
 	}
 }
 
