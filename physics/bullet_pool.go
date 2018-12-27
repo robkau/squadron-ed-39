@@ -1,5 +1,7 @@
 package physics
 
+import "github.com/faiface/pixel"
+
 type BulletPool struct {
 	pool chan *Bullet
 }
@@ -15,7 +17,7 @@ func (p *BulletPool) Get() *Bullet {
 	select {
 	case b = <-p.pool:
 	default:
-		b = &Bullet{}
+		b = &Bullet{moveable: &LinearPointMovingStrategy{}}
 	}
 
 	return b
@@ -23,12 +25,9 @@ func (p *BulletPool) Get() *Bullet {
 
 func (p *BulletPool) Put(b *Bullet) {
 	b.collided = false
-	b.Dest.X = 0
-	b.Dest.Y = 0
-	b.Pos.X = 0
-	b.Pos.Y = 0
-	b.Vel.X = 0
-	b.Vel.Y = 0
+	b.SetDest(pixel.ZV)
+	b.SetPos(pixel.ZV)
+	b.SetVel(pixel.ZV)
 	select {
 	case p.pool <- b:
 	default:

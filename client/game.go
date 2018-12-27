@@ -56,10 +56,11 @@ func startFreePlay(debugSet bool) {
 	lastNumBullets := -999
 	fmt.Fprintf(txt, "%d bullets", numBullets)
 
+	// todo: own function
 	// play the background song
 	go func() {
-		return // this experiment is disabled for now
-		// it will extract music assets packed into the binary and play them in the background
+		//return // this experiment is disabled for now
+		//it will extract music assets packed into the binary and play them in the background
 		box := packr.NewBox("./assets")
 
 		// Decode the packed .mp3 file
@@ -93,7 +94,7 @@ func startFreePlay(debugSet bool) {
 		}
 
 		if win.JustPressed(pixelgl.MouseButtonLeft) || win.MouseScroll().Y != 0 {
-			world.MoveShooter(mp)
+			world.SetShooterDestination(mp)
 		}
 
 		if win.JustPressed(pixelgl.MouseButtonRight) {

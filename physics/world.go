@@ -18,9 +18,12 @@ type world struct {
 
 func NewWorld() *world {
 	platforms := make([]*platform, 0)
-	platforms = append(platforms, &platform{Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
+
+	// todo: append platforms elsewhere
+	platforms = append(platforms, &platform{moveable: &LinearRectMovingStrategy{}, Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
+
 	return &world{
-		shooter:    &BulletSpawner{},
+		shooter:    &BulletSpawner{moveable: &LinearPointMovingStrategy{}},
 		bullets:    make([]*Bullet, 0),
 		platforms:  platforms,
 		BulletPool: NewPool(BulletPoolSize),

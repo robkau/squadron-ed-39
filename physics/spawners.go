@@ -4,9 +4,7 @@ import "github.com/faiface/pixel"
 
 // todo: interface for Moveable()
 type BulletSpawner struct {
-	Pos  pixel.Vec
-	Dest pixel.Vec
-	Vel  pixel.Vec
+	moveable
 	// todo: control spawn rate with var here
 }
 
@@ -14,14 +12,12 @@ func (world *world) SpawnBullet(dest pixel.Vec) {
 	if world.bulletCounter > maxBullets {
 		return
 	}
-	v := pixel.Lerp(world.shooter.Pos, dest, BulletSpeedFactor)
-	v = v.Sub(world.shooter.Pos) // rebase velocity calculation to origin
+	v := pixel.Lerp(world.shooter.Pos(), dest, BulletSpeedFactor)
+	v = v.Sub(world.shooter.Pos()) // rebase velocity calculation to origin
 	b := world.BulletPool.Get()
-	b.Pos = world.shooter.Pos
-	b.Dest.X = dest.X
-	b.Dest.Y = dest.Y
-	b.Vel.X = v.X
-	b.Vel.Y = v.Y
+	b.SetPos(world.shooter.Pos())
+	b.SetDest(dest)
+	b.SetVel(v)
 	EnforceMinBulletSpeed(b)
 	// apply ship momentum to launched bullets
 	//b.Vel = b.Vel.Add(world.shooter.Vel.Scaled(10))
@@ -31,71 +27,27 @@ func (world *world) SpawnBullet(dest pixel.Vec) {
 
 func (world *world) BulletSpray(dest pixel.Vec) {
 	// todo: implement for odd number of bullets
-	firingLine := dest.Sub(world.shooter.Pos)
+	firingLine := dest.Sub(world.shooter.Pos())
 	firingSpread := 1.0 / 6 //rad
-	numProjectiles := 9
+	numProjectiles := 12
 	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
 
 	// left arc
 	for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
-		world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(world.shooter.Pos().Add(firingLine.Rotated(-j)))
 	}
 	// right arc
 	for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
-		world.SpawnBullet(world.shooter.Pos.Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(world.shooter.Pos().Add(firingLine.Rotated(-j)))
 	}
 	// center
 	if numProjectiles%2 != 0 {
-		world.SpawnBullet(world.shooter.Pos.Add(firingLine))
+		world.SpawnBullet(world.shooter.Pos().Add(firingLine))
 	}
 }
 
-func (world *world) MoveShooter(dest pixel.Vec) {
-	world.shooter.Dest = dest
-	walkDir := dest.Sub(world.shooter.Pos).Unit()
-	world.shooter.Vel = walkDir.Scaled(BulletSpawnerMoveSpeed)
-}
-
-func (bsp *BulletSpawner) Walk() {
-	if bsp.Vel != pixel.ZV {
-		// walk forward
-		bsp.Pos = bsp.Pos.Add(bsp.Vel)
-
-		// arrived perfectly at destination
-		if bsp.Pos == bsp.Dest {
-			bsp.Vel = pixel.ZV
-			return
-		}
-
-		// overshot destination
-		if bsp.Vel.X >= 0 {
-			if bsp.Pos.X > bsp.Dest.X {
-				bsp.Pos = bsp.Dest
-				bsp.Vel = pixel.ZV
-				return
-			}
-		} else {
-			if bsp.Pos.X < bsp.Dest.X {
-				bsp.Pos = bsp.Dest
-				bsp.Vel = pixel.ZV
-				return
-			}
-		}
-
-		if bsp.Vel.Y >= 0 {
-			if bsp.Pos.Y > bsp.Dest.Y {
-				bsp.Pos = bsp.Dest
-				bsp.Vel = pixel.ZV
-				return
-			}
-		} else {
-			if bsp.Pos.Y < bsp.Dest.Y {
-				bsp.Pos = bsp.Dest
-				bsp.Vel = pixel.ZV
-				return
-			}
-		}
-
-		// still walking
-	}
+func (world *world) SetShooterDestination(dest pixel.Vec) {
+	world.shooter.SetDest(dest)
+	walkDir := dest.Sub(world.shooter.Pos()).Unit()
+	world.shooter.SetVel(walkDir.Scaled(BulletSpawnerMoveSpeed))
 }

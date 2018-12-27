@@ -1,14 +1,17 @@
 package physics
 
 import (
-	"github.com/faiface/pixel"
 	"image/color"
 )
 
 type platform struct {
-	Rect   pixel.Rect
+	moveable
 	Color  color.Color
 	Health int
+}
+
+func (pl *platform) move(dt float64) {
+
 }
 
 func deletePlatforms(platforms *[]*platform) {

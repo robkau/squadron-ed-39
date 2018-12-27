@@ -1,17 +1,13 @@
 package physics
 
-import "github.com/faiface/pixel"
-
 type Bullet struct {
-	Pos      pixel.Vec
-	Vel      pixel.Vec
-	Dest     pixel.Vec
+	moveable
 	collided bool
 }
 
 func EnforceMinBulletSpeed(b *Bullet) {
-	if b.Vel.Len() < BulletMinSpeed {
-		b.Vel = b.Vel.Scaled(BulletMinSpeed / b.Vel.Len())
+	if b.Vel().Len() < BulletMinSpeed {
+		b.SetVel(b.Vel().Scaled(BulletMinSpeed / b.Vel().Len()))
 	}
 }
 
@@ -20,7 +16,7 @@ func deleteBullets(bullets *[]*Bullet, bp *BulletPool) int {
 	// next: profile again with bullet pool
 	removed := 0
 	for i, b := range *bullets {
-		if b != nil && (b.collided || (Abs(b.Pos.X) > MaxBulletBound || Abs(b.Pos.Y) > MaxBulletBound)) {
+		if b != nil && (b.collided || b.outOfBounds()) {
 			// move dead bullet to end of slice
 			(*bullets)[i] = (*bullets)[len(*bullets)-1]
 			// dereference dead bullet pointer
@@ -32,4 +28,8 @@ func deleteBullets(bullets *[]*Bullet, bp *BulletPool) int {
 		}
 	}
 	return removed
+}
+
+func (b *Bullet) outOfBounds() bool {
+	return Abs(b.Pos().X) > MaxBulletBound || Abs(b.Pos().Y) > MaxBulletBound
 }

@@ -1,19 +1,18 @@
 package physics
 
 import (
-	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
 
 const (
-	Dt                             = 0.05 // global simulation timestep
+	Dt                             = 0.1 // global simulation timestep
 	MaxBulletBound         float64 = 525
 	MaxWindowBound                 = 500
 	BulletMinSpeed         float64 = 30
 	BulletPoolSize                 = 2000
 	BulletSpawnModulo              = 25
-	BulletSpawnerMoveSpeed         = 2.5
+	BulletSpawnerMoveSpeed         = 25
 	BulletSpeedFactor      float64 = 0.06
 	SlowdownFactor                 = 8
 	FpsTarget                      = 60
@@ -21,26 +20,55 @@ const (
 )
 
 func (world *world) Update(dt float64, mp pixel.Vec) {
-	// spawn new bullets
+
+	world.movePlatforms(dt)
+	//world.checkPlatformCollisions()
+	world.moveShooters(dt)
+	//world.checkShooterCollisions()
+	world.spawnBullets(mp)
+	world.moveBullets(dt)
+	world.checkBulletCollisions()
+
+	world.iteration += 1
+}
+
+func (world *world) movePlatforms(dt float64) {
+	for _, pl := range world.platforms {
+		pl.move(dt)
+	}
+}
+
+func (world *world) moveShooters(dt float64) {
+	world.shooter.move(dt)
+}
+
+func (world *world) spawnBullets(mp pixel.Vec) {
 	if world.iteration%BulletSpawnModulo == 0 {
 		world.SpawnBullet(mp)
 	}
+}
 
-	// update world
-	world.shooter.Walk()
+func (world *world) moveBullets(dt float64) {
 
+	for _, b := range world.bullets {
+		// update bullet position
+		b.move(dt)
+	}
+
+}
+
+func (world *world) checkBulletCollisions() {
 	deadBullet := false
-	// todo: allocate nothing inside loop
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
 			continue
 		}
-
-		if b.Vel.X == 0 && b.Vel.Y == 0 {
-			panic(fmt.Sprintf("There is a stuck bullet at %f, %f", b.Pos.X, b.Pos.Y))
-		}
-
-		if Abs(b.Pos.X) > MaxBulletBound || Abs(b.Pos.Y) > MaxBulletBound {
+		/*
+			if b.Vel().X == 0 && b.Vel().Y == 0 {
+				panic(fmt.Sprintf("There is a stuck bullet at %f, %f", b.Pos().X, b.Pos().Y))
+			}
+		*/
+		if b.outOfBounds() {
 			deadBullet = true
 			continue
 		}
@@ -49,7 +77,7 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 		// todo: quadtree instead of brute force
 		deadPlatform := false
 		for _, p := range world.platforms {
-			if p.Rect.Contains(b.Pos) && p.Health > 0 {
+			if p.Rect.Contains(b.Pos()) && p.Health > 0 {
 				b.collided = true
 				deadBullet = true
 				p.Health -= 1
@@ -59,20 +87,15 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 				break
 			}
 		}
-		// clear the platforms list if any were killed
+		// clear dead platforms if needed
 		if deadPlatform {
 			deletePlatforms(&world.platforms)
 		}
-
-		// update bullet position
-		b.Pos = b.Pos.Add(b.Vel.Scaled(dt))
+		// clear dead bullets if needed
+		if deadBullet {
+			world.bulletCounter -= deleteBullets(&world.bullets, world.BulletPool)
+		}
 	}
-	// clear the bullets list if any collided or flew too far away
-	if deadBullet {
-		world.bulletCounter -= deleteBullets(&world.bullets, world.BulletPool)
-	}
-
-	world.iteration += 1
 }
 
 func (world *world) Draw(imd *imdraw.IMDraw) {
@@ -81,7 +104,7 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		if b == nil || b.collided {
 			continue
 		}
-		imd.Push(b.Pos)
+		imd.Push(b.Pos())
 	}
 	imd.Circle(3, 0)
 
@@ -92,6 +115,6 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 	}
 
 	imd.Color = pixel.RGB(0, 0.5, 1)
-	imd.Push(world.shooter.Pos)
+	imd.Push(world.shooter.Pos())
 	imd.Circle(5, 0)
 }
