@@ -39,12 +39,16 @@ func (world *world) movePlatforms(dt float64) {
 }
 
 func (world *world) moveShooters(dt float64) {
-	world.shooter.move(dt)
+	for _, sh := range world.shooters {
+		sh.move(dt)
+	}
 }
 
 func (world *world) spawnBullets(mp pixel.Vec) {
 	if world.iteration%BulletSpawnModulo == 0 {
-		world.SpawnBullet(mp)
+		for _, sh := range world.shooters {
+			sh.shoot(world)
+		}
 	}
 }
 
@@ -63,11 +67,13 @@ func (world *world) checkBulletCollisions() {
 		if b == nil || b.collided {
 			continue
 		}
-		/*
-			if b.Vel().X == 0 && b.Vel().Y == 0 {
-				panic(fmt.Sprintf("There is a stuck bullet at %f, %f", b.Pos().X, b.Pos().Y))
-			}
-		*/
+
+		if b.Vel().X == 0 && b.Vel().Y == 0 {
+			b.collided = true
+			deadBullet = true
+			continue
+		}
+
 		if b.outOfBounds() {
 			deadBullet = true
 			continue
@@ -115,6 +121,8 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 	}
 
 	imd.Color = pixel.RGB(0, 0.5, 1)
-	imd.Push(world.shooter.Pos())
+	for _, sh := range world.shooters {
+		imd.Push(sh.Pos())
+	}
 	imd.Circle(5, 0)
 }

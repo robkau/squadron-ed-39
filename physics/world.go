@@ -7,7 +7,7 @@ import (
 )
 
 type world struct {
-	shooter       *BulletSpawner
+	shooters      []*BulletSpawner
 	bullets       []*Bullet
 	platforms     []*platform
 	BulletPool    *BulletPool
@@ -22,8 +22,12 @@ func NewWorld() *world {
 	// todo: append platforms elsewhere
 	platforms = append(platforms, &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, dest: pixel.Vec{X: 50, Y: 300}, vel: pixel.Vec{X: 3, Y: 10}}, Health: 50, Color: pixel.RGB(0.1, 0.5, 0.8)})
 
+	sh := make([]*BulletSpawner, 0)
+	sh = append(sh, &BulletSpawner{moveable: &LinearPointMovingStrategy{stopAtDest: true}})
+	sh = append(sh, &BulletSpawner{moveable: &LinearPointMovingStrategy{stopAtDest: false, pos: pixel.Vec{X: -100, Y: 0}}})
+
 	return &world{
-		shooter:    &BulletSpawner{moveable: &LinearPointMovingStrategy{}},
+		shooters:   sh,
 		bullets:    make([]*Bullet, 0),
 		platforms:  platforms,
 		BulletPool: NewPool(BulletPoolSize),

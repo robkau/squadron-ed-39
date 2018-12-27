@@ -8,14 +8,14 @@ type BulletSpawner struct {
 	// todo: control spawn rate with var here
 }
 
-func (world *world) SpawnBullet(dest pixel.Vec) {
+func (world *world) SpawnBullet(pos pixel.Vec, dest pixel.Vec) {
 	if world.bulletCounter > maxBullets {
 		return
 	}
-	v := pixel.Lerp(world.shooter.Pos(), dest, BulletSpeedFactor)
-	v = v.Sub(world.shooter.Pos()) // rebase velocity calculation to origin
+	v := pixel.Lerp(pos, dest, BulletSpeedFactor)
+	v = v.Sub(pos) // rebase velocity calculation to origin
 	b := world.BulletPool.Get()
-	b.SetPos(world.shooter.Pos())
+	b.SetPos(pos)
 	b.SetDest(dest)
 	b.SetVel(v)
 	EnforceMinBulletSpeed(b)
@@ -25,29 +25,44 @@ func (world *world) SpawnBullet(dest pixel.Vec) {
 	world.bulletCounter += 1
 }
 
-func (world *world) BulletSpray(dest pixel.Vec) {
+func (bsp *BulletSpawner) shoot(world *world) {
+	world.SpawnBullet(bsp.Pos(), bsp.pickTarget(world))
+}
+
+func (bsp *BulletSpawner) pickTarget(world *world) pixel.Vec {
+	if len(world.platforms) == 0 {
+		return pixel.ZV
+	}
+
+	return world.platforms[0].Pos().Add(world.platforms[0].Vel().Scaled(15))
+}
+
+func (world *world) BulletSpray(pos pixel.Vec, dest pixel.Vec) {
 	// todo: implement for odd number of bullets
-	firingLine := dest.Sub(world.shooter.Pos())
+	firingLine := dest.Sub(pos)
 	firingSpread := 1.0 / 6 //rad
 	numProjectiles := 12
 	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
 
 	// left arc
 	for j := -firingSpread + firingSpreadIncrement/2; j < 0; j += firingSpreadIncrement {
-		world.SpawnBullet(world.shooter.Pos().Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(pos, pos.Add(firingLine.Rotated(-j)))
 	}
 	// right arc
 	for j := firingSpread - firingSpreadIncrement/2; j > 0; j -= firingSpreadIncrement {
-		world.SpawnBullet(world.shooter.Pos().Add(firingLine.Rotated(-j)))
+		world.SpawnBullet(pos, pos.Add(firingLine.Rotated(-j)))
 	}
 	// center
 	if numProjectiles%2 != 0 {
-		world.SpawnBullet(world.shooter.Pos().Add(firingLine))
+		world.SpawnBullet(pos, pos.Add(firingLine))
 	}
 }
 
 func (world *world) SetShooterDestination(dest pixel.Vec) {
-	world.shooter.SetDest(dest)
-	walkDir := dest.Sub(world.shooter.Pos()).Unit()
-	world.shooter.SetVel(walkDir.Scaled(BulletSpawnerMoveSpeed))
+	for _, sh := range world.shooters {
+		sh.SetDest(dest)
+		walkDir := dest.Sub(sh.Pos()).Unit()
+		sh.SetVel(walkDir.Scaled(BulletSpawnerMoveSpeed))
+	}
+
 }

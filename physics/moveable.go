@@ -13,9 +13,10 @@ type moveable interface {
 }
 
 type LinearPointMovingStrategy struct {
-	pos  pixel.Vec
-	vel  pixel.Vec
-	dest pixel.Vec
+	pos        pixel.Vec
+	vel        pixel.Vec
+	dest       pixel.Vec
+	stopAtDest bool
 }
 
 func (point *LinearPointMovingStrategy) Pos() pixel.Vec {
@@ -54,41 +55,43 @@ func (point *LinearPointMovingStrategy) move(dt float64) bool {
 		// move toward destination
 		point.pos = point.pos.Add(point.vel.Scaled(dt))
 
-		// arrived perfectly at destination
-		if point.pos == point.dest {
-			point.vel = pixel.ZV
-			return true
-		}
-
-		// overshot destination
-		if point.vel.X >= 0 {
-			if point.pos.X > point.dest.X {
-				point.pos.X = point.dest.X
-				point.vel.X = 0
-				arrivedOneAxis = true
+		if point.stopAtDest {
+			// arrived perfectly at destination
+			if point.pos == point.dest {
+				point.vel = pixel.ZV
+				return true
 			}
-		} else {
-			if point.pos.X < point.dest.X {
-				point.pos.X = point.dest.X
-				point.vel.X = 0
-				arrivedOneAxis = true
-			}
-		}
 
-		if point.vel.Y >= 0 {
-			if point.pos.Y > point.dest.Y {
-				point.pos.Y = point.dest.Y
-				point.vel.Y = 0
-				if arrivedOneAxis {
-					return true
+			// overshot destination
+			if point.vel.X >= 0 {
+				if point.pos.X > point.dest.X {
+					point.pos.X = point.dest.X
+					point.vel.X = 0
+					arrivedOneAxis = true
+				}
+			} else {
+				if point.pos.X < point.dest.X {
+					point.pos.X = point.dest.X
+					point.vel.X = 0
+					arrivedOneAxis = true
 				}
 			}
-		} else {
-			if point.pos.Y < point.dest.Y {
-				point.pos.Y = point.dest.Y
-				point.vel.Y = 0
-				if arrivedOneAxis {
-					return true
+
+			if point.vel.Y >= 0 {
+				if point.pos.Y > point.dest.Y {
+					point.pos.Y = point.dest.Y
+					point.vel.Y = 0
+					if arrivedOneAxis {
+						return true
+					}
+				}
+			} else {
+				if point.pos.Y < point.dest.Y {
+					point.pos.Y = point.dest.Y
+					point.vel.Y = 0
+					if arrivedOneAxis {
+						return true
+					}
 				}
 			}
 		}

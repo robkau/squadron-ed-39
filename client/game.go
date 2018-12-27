@@ -98,7 +98,7 @@ func startFreePlay(debugSet bool) {
 		}
 
 		if win.JustPressed(pixelgl.MouseButtonRight) {
-			world.BulletSpray(mp)
+			world.BulletSpray(pixel.ZV, mp)
 		}
 
 		// step physics forward
