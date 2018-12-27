@@ -20,7 +20,7 @@ func NewWorld() *world {
 	platforms := make([]*platform, 0)
 
 	// todo: append platforms elsewhere
-	platforms = append(platforms, &platform{moveable: &LinearRectMovingStrategy{}, Health: 50, Rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, Color: pixel.RGB(0.1, 0.5, 0.8)})
+	platforms = append(platforms, &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, dest: pixel.Vec{X: 50, Y: 300}, vel: pixel.Vec{X: 3, Y: 10}}, Health: 50, Color: pixel.RGB(0.1, 0.5, 0.8)})
 
 	return &world{
 		shooter:    &BulletSpawner{moveable: &LinearPointMovingStrategy{}},

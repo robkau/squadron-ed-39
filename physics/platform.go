@@ -1,16 +1,18 @@
 package physics
 
 import (
+	"github.com/faiface/pixel"
 	"image/color"
 )
 
 type platform struct {
-	moveable
+	LinearRectMovingStrategy
 	Color  color.Color
 	Health int
 }
 
-func (pl *platform) move(dt float64) {
+func (pl *platform) Rect() *pixel.Rect {
+	return pl.Rect()
 
 }
 

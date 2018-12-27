@@ -77,7 +77,7 @@ func (world *world) checkBulletCollisions() {
 		// todo: quadtree instead of brute force
 		deadPlatform := false
 		for _, p := range world.platforms {
-			if p.Rect.Contains(b.Pos()) && p.Health > 0 {
+			if p.rect.Contains(b.Pos()) && p.Health > 0 {
 				b.collided = true
 				deadBullet = true
 				p.Health -= 1
@@ -110,7 +110,7 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 
 	for _, p := range world.platforms {
 		imd.Color = p.Color
-		imd.Push(p.Rect.Min, p.Rect.Max)
+		imd.Push(p.rect.Min, p.rect.Max)
 		imd.Rectangle(0)
 	}
 

@@ -1,7 +1,7 @@
 package physics
 
 type Bullet struct {
-	moveable
+	LinearPointMovingStrategy
 	collided bool
 }
 

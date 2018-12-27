@@ -17,7 +17,7 @@ func (p *BulletPool) Get() *Bullet {
 	select {
 	case b = <-p.pool:
 	default:
-		b = &Bullet{moveable: &LinearPointMovingStrategy{}}
+		b = &Bullet{LinearPointMovingStrategy: LinearPointMovingStrategy{}}
 	}
 
 	return b
