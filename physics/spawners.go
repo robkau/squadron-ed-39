@@ -2,7 +2,6 @@ package physics
 
 import "github.com/faiface/pixel"
 
-// todo: interface for Moveable()
 type BulletSpawner struct {
 	moveable
 	// todo: control spawn rate with var here
@@ -34,6 +33,7 @@ func (bsp *BulletSpawner) pickTarget(world *world) pixel.Vec {
 		return pixel.ZV
 	}
 
+	// todo: real calculation to find optimal position and speed
 	return world.platforms[0].Pos().Add(world.platforms[0].Vel().Scaled(15))
 }
 
@@ -44,10 +44,10 @@ func (world *world) BulletSpray(dest pixel.Vec) {
 }
 
 func (bsp *BulletSpawner) BulletSpray(world *world, dest pixel.Vec) {
-	// todo: implement for odd number of bullets
+	// calculate measurements for firing arc
 	firingLine := dest.Sub(bsp.Pos())
 	firingSpread := 1.0 / 6 //rad
-	numProjectiles := 12
+	numProjectiles := 5
 	firingSpreadIncrement := 2 * (firingSpread / (float64(numProjectiles)))
 
 	// left arc

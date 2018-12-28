@@ -14,7 +14,6 @@ import (
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 	"log"
-	"math"
 	"os"
 	"runtime/pprof"
 	"time"
@@ -23,23 +22,29 @@ import (
 const (
 	CpuProfile  = "cpu.pprof"
 	DebugEnvVar = "sq39_debug"
+	StatUiWidth = 200
 )
 
 func startFreePlay(debugSet bool) {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Squadron E.D. 39",
-		Bounds: pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound),
+		Bounds: pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound+StatUiWidth, physics.MaxWindowBound),
 		VSync:  false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
 		panic(err)
 	}
-	win.SetSmooth(true)
+	win.SetSmooth(false)
 
-	var world = physics.NewWorld()
+	GameOffset := pixel.Vec{X: 0}
+	StatOffset := pixel.Vec{X: physics.MaxWindowBound + StatUiWidth/2}
 
-	canvas := pixelgl.NewCanvas(pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound))
+	gameCanvas := pixelgl.NewCanvas(pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound))
+	statCanvas := pixelgl.NewCanvas(pixel.R(-StatUiWidth/2, -physics.MaxWindowBound, StatUiWidth/2, physics.MaxWindowBound))
+
+	win.SetMatrix(pixel.IM)
+
 	imd := imdraw.New(nil)
 	imd.Precision = 32
 
@@ -50,7 +55,7 @@ func startFreePlay(debugSet bool) {
 
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	txt := text.New(pixel.V(-450, 450), atlas)
+	txt := text.New(pixel.V(physics.MaxWindowBound, physics.MaxWindowBound-50), atlas)
 	txt.Color = colornames.Lightgrey
 	numBullets := 0
 	lastNumBullets := -999
@@ -84,9 +89,11 @@ func startFreePlay(debugSet bool) {
 		<-playing
 	}()
 
+	var world = physics.NewWorld()
+
 	for !win.Closed() {
 		dt := physics.Dt
-		mp := win.MousePosition()
+		mp := win.MousePosition().Sub(GameOffset) // rebase towards game canvas
 
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
@@ -105,20 +112,18 @@ func startFreePlay(debugSet bool) {
 		world.Update(dt, mp)
 
 		// draw updated scene to
-		canvas.Clear(colornames.Black)
+		gameCanvas.Clear(colornames.Black)
+		statCanvas.Clear(colornames.Blue)
 		imd.Clear()
 		world.Draw(imd)
-		imd.Draw(canvas)
+		imd.Draw(gameCanvas)
 
 		// stretch the canvas to the window
+		// todo: stats UI
 		win.Clear(colornames.White)
-		win.SetMatrix(pixel.IM.Scaled(pixel.ZV,
-			math.Min(
-				win.Bounds().W()/canvas.Bounds().W(),
-				win.Bounds().H()/canvas.Bounds().H(),
-			),
-		).Moved(win.Bounds().Center()))
-		canvas.Draw(win, pixel.IM.Moved(canvas.Bounds().Center()))
+
+		gameCanvas.Draw(win, pixel.IM.Moved(GameOffset)) //).Moved(canvas.Bounds().Center()))
+		statCanvas.Draw(win, pixel.IM.Moved(StatOffset)) //).Moved(canvas.Bounds().Center()))
 
 		numBullets = world.NumBullets()
 		if numBullets != lastNumBullets {
