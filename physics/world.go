@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/text"
+	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
+	"math"
 )
 
 type world struct {
@@ -25,27 +27,30 @@ type world struct {
 
 func NewWorld() *world {
 	w := &world{
-		shooters:   make([]*BulletSpawner, 0),
-		bullets:    make([]*Bullet, 0),
-		platforms:  make([]*platform, 0),
-		collectors: make([]*collector, 0),
-		colliders:  make([]collideable, 0),
-		BulletPool: NewPool(BulletPoolSize),
-		atlas:      text.NewAtlas(basicfont.Face7x13, text.ASCII),
+		shooters:    make([]*BulletSpawner, 0),
+		bullets:     make([]*Bullet, 0),
+		platforms:   make([]*platform, 0),
+		collectors:  make([]*collector, 0),
+		colliders:   make([]collideable, 0),
+		BulletPool:  NewPool(BulletPoolSize),
+		atlas:       text.NewAtlas(basicfont.Face7x13, text.ASCII),
+		energyCount: 40,
 	}
+
 	w.AddCollector(pixel.Vec{X: 0, Y: -350})
 
-	w.AddShooter(pixel.Vec{X: -15, Y: -450})
-	w.AddShooter(pixel.Vec{X: 0, Y: -450})
-	w.AddShooter(pixel.Vec{X: 15, Y: -450})
 	return w
 }
 
 func (world *world) AddPlatform(pos pixel.Rect, dest pixel.Vec, health int) {
 	dir := dest.Sub(pos.Center())
 	pVel := dir.Scaled(PlatformSpeed / dir.Len())
-	p := &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pos, dest: dest, vel: pVel},
-		Health: 50, Color: pixel.RGB(0.1, 0.5, 0.8),
+	world.AddPlatformWithV(pos, dest, pVel, health)
+}
+
+func (world *world) AddPlatformWithV(pos pixel.Rect, dest pixel.Vec, vel pixel.Vec, health int) {
+	p := &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pos, dest: dest, vel: vel},
+		Health: health, Color: colornames.Lightseagreen,
 		UniqueId: randomHex(16)}
 	world.platforms = append(world.platforms, p)
 	world.colliders = append(world.colliders, p)
@@ -67,12 +72,37 @@ func (world *world) NumBullets() int {
 	return world.bulletCounter
 }
 
+func (world *world) NumPlatforms() int {
+	return len(world.platforms)
+}
+
 func (world *world) EnergyCount() int {
 	return world.energyCount
 }
 
 func (world *world) SubEnergy(e int) {
 	world.energyCount -= e
+}
+
+func (world *world) lowestPlatform() *platform {
+	lowest := math.Inf(1)
+	lowestIndex := -1
+	for i, p := range world.platforms {
+		if p.Pos().Y < lowest {
+			lowest = p.Pos().Y
+			lowestIndex = i
+		}
+	}
+	return world.platforms[lowestIndex]
+}
+
+func (world *world) CheckLoseCondition() bool {
+	for _, pl := range world.platforms {
+		if pl.Pos().Y < -MaxWindowBound {
+			return true
+		}
+	}
+	return false
 }
 
 func randomHex(n int) string {

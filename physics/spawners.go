@@ -18,8 +18,6 @@ func (world *world) SpawnBullet(pos pixel.Vec, dest pixel.Vec) {
 	b.SetDest(dest)
 	b.SetVel(v)
 	EnforceMinBulletSpeed(b)
-	// apply ship momentum to launched bullets
-	//b.Vel = b.Vel.Add(world.shooter.Vel.Scaled(10))
 	world.bullets = append(world.bullets, b)
 	world.bulletCounter += 1
 }
@@ -30,11 +28,17 @@ func (bsp *BulletSpawner) shoot(world *world) {
 
 func (bsp *BulletSpawner) pickTarget(world *world) pixel.Vec {
 	if len(world.platforms) == 0 {
+		if len(world.collectors) != 0 {
+			return world.collectors[0].Pos()
+		}
 		return pixel.ZV
 	}
 
-	// todo: real calculation to find optimal position and speed
-	return world.platforms[0].Pos().Add(world.platforms[0].Vel().Scaled(15))
+	// todo: make accurate
+	targetPlatform := world.lowestPlatform()
+	timeToImpact := targetPlatform.Pos().Sub(bsp.Pos()).Len() / BulletMinSpeed
+	firingTarget := targetPlatform.Pos().Add(targetPlatform.Vel().Scaled(timeToImpact))
+	return firingTarget
 }
 
 func (world *world) BulletSpray(dest pixel.Vec) {

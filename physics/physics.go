@@ -3,21 +3,22 @@ package physics
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"math/rand"
 )
 
 const (
 	Dt                             = 0.1 // global simulation timestep
 	MaxBulletBound         float64 = 525
 	MaxWindowBound                 = 500
-	BulletMinSpeed         float64 = 30
-	PlatformSpeed          float64 = 10
+	BulletMinSpeed         float64 = 45
+	PlatformSpeed          float64 = 5
 	BulletPoolSize                 = 2000
 	BulletSpawnModulo              = 25
 	BulletSpawnerMoveSpeed         = 25
 	BulletSpeedFactor      float64 = 0.06
 	SlowdownFactor                 = 8
 	FpsTarget                      = 60
-	maxBullets                     = 1000
+	maxBullets                     = 2000
 )
 
 func (world *world) Update(dt float64, mp pixel.Vec) {
@@ -27,9 +28,19 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 	world.moveBullets(dt)
 	world.checkBulletCollisions()
 
-	if world.iteration%100 == 0 {
-		xPos := float64((world.iteration%MaxWindowBound)*2 - MaxWindowBound/2)
+	if world.iteration%150 == 0 && world.iteration >= 650 {
+		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
 		world.AddPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
+	}
+
+	if world.iteration%80 == 0 && world.iteration >= 2000 {
+		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
+		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
+	}
+
+	if world.iteration%4 == 0 && world.iteration >= 3500 {
+		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
+		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
 
 	world.iteration += 1

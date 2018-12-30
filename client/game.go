@@ -24,6 +24,10 @@ const (
 	CpuProfile  = "cpu.pprof"
 	DebugEnvVar = "sq39_debug"
 	StatUiWidth = 200
+
+	StatsText = "--------------------\n%d joules available\n\n%d advancing enemies\n\n%d bullets in flight\n--------------------"
+	StoryText = "The earth is under attack\nby strange platforms,\nyou were sent to defend.\n\nBuild turrets.\nDestroy moving platforms.\nGreen square collects.\nTurrets prioritize enemies.\n\nBuild quickly,\nmore enemies soon."
+	HelpText  = "Left Click:\n  Place new turret\n  (costs 20 joules)\n\nRight Click:\n  Order bullet spray\n  (costs 15 joules)\n\nr:\n  Reset world"
 )
 
 func startFreePlay(debugSet bool) {
@@ -37,14 +41,9 @@ func startFreePlay(debugSet bool) {
 		panic(err)
 	}
 	win.SetSmooth(false)
-
-	GameOffset := pixel.Vec{X: 0}
-	StatOffset := pixel.Vec{X: physics.MaxWindowBound + StatUiWidth/2}
+	win.SetMatrix(pixel.IM)
 
 	gameCanvas := pixelgl.NewCanvas(pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound))
-	statCanvas := pixelgl.NewCanvas(pixel.R(-StatUiWidth/2, -physics.MaxWindowBound, StatUiWidth/2, physics.MaxWindowBound))
-
-	win.SetMatrix(pixel.IM)
 
 	imd := imdraw.New(nil)
 	imd.Precision = 32
@@ -56,50 +55,27 @@ func startFreePlay(debugSet bool) {
 
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	txt := text.New(pixel.V(physics.MaxWindowBound+15, physics.MaxWindowBound-50), atlas)
+	txt := text.New(pixel.V(physics.MaxWindowBound+25, physics.MaxWindowBound-50), atlas)
+	storyTxt := text.New(pixel.V(physics.MaxWindowBound+10, physics.MaxWindowBound-200), atlas)
+	helpTxt := text.New(pixel.V(physics.MaxWindowBound+10, -physics.MaxWindowBound+200), atlas)
 	txt.Color = colornames.Lightgrey
+	storyTxt.Color = colornames.Lightgrey
+	helpTxt.Color = colornames.Lightgrey
 	numBullets := 0
 	lastNumBullets := -999
-	fmt.Fprintf(txt, "%d bullets\n%d joules", numBullets, 0)
+	fmt.Fprintf(txt, StatsText, 0, 0, numBullets)
+	fmt.Fprint(storyTxt, StoryText)
+	fmt.Fprint(helpTxt, HelpText)
 
 	// todo: own function
 	// play the background song
-	go func() {
-		//return // this experiment is disabled for now
-		//it will extract music assets packed into the binary and play them in the background
-		box := packr.NewBox("./assets")
-
-		// Decode the packed .mp3 file
-		f, err := box.Open("song.mp3")
-		if err != nil {
-			log.Fatal(err)
-		}
-		s, format, _ := mp3.Decode(f)
-		v := effects.Volume{
-			Streamer: s,
-			Base:     2,
-			Volume:   -4,
-		}
-
-		// Init the Speaker with the SampleRate of the format and a buffer size of 1/10s
-		speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-
-		// Initiate control channel
-		playing := make(chan struct{})
-
-		// Play the sound
-		speaker.Play(beep.Seq(&v, beep.Callback(func() {
-			// Callback after the stream Ends
-			close(playing)
-		})))
-		<-playing
-	}()
+	go playBackgroundMusic()
 
 	var world = physics.NewWorld()
 
 	for !win.Closed() {
 		dt := physics.Dt
-		mp := win.MousePosition().Sub(GameOffset) // rebase towards game canvas
+		mp := win.MousePosition()
 		if mp.X > physics.MaxWindowBound {
 			mp.X = physics.MaxWindowBound
 		}
@@ -107,6 +83,11 @@ func startFreePlay(debugSet bool) {
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
 			dt /= physics.SlowdownFactor
+		}
+
+		// reset world with r
+		if win.JustPressed(pixelgl.KeyR) {
+			world = physics.NewWorld()
 		}
 
 		// move shooters towards mouse location on left click or mouse scroll
@@ -119,33 +100,36 @@ func startFreePlay(debugSet bool) {
 
 		// bullet spray with right click
 		if win.JustPressed(pixelgl.MouseButtonRight) {
-			world.BulletSpray(mp)
+			if world.EnergyCount() >= 15 {
+				world.BulletSpray(mp)
+				world.SubEnergy(15)
+			}
 		}
 
 		// step physics forward
 		world.Update(dt, mp)
 
+		if world.CheckLoseCondition() {
+			world = physics.NewWorld()
+		}
+
 		// draw updated scene
-		gameCanvas.Clear(colornames.Black)
-		statCanvas.Clear(colornames.Darkblue)
+		win.Clear(colornames.Darkslateblue)
 		imd.Clear()
+		gameCanvas.Clear(colornames.Black)
 		world.Draw(imd)
 		imd.Draw(gameCanvas)
-
-		// stretch the canvas to the window
-		// todo: stats UI
-		win.Clear(colornames.White)
-
-		gameCanvas.Draw(win, pixel.IM.Moved(GameOffset)) //).Moved(canvas.Bounds().Center()))
-		statCanvas.Draw(win, pixel.IM.Moved(StatOffset)) //).Moved(canvas.Bounds().Center()))
+		gameCanvas.Draw(win, pixel.IM)
 
 		numBullets = world.NumBullets()
 		if numBullets != lastNumBullets {
 			txt.Clear()
-			fmt.Fprintf(txt, "%d bullets\n%d joules", numBullets, world.EnergyCount())
+			fmt.Fprintf(txt, StatsText, world.EnergyCount(), world.NumPlatforms(), numBullets)
 			lastNumBullets = numBullets
 		}
 		txt.Draw(win, pixel.IM)
+		storyTxt.Draw(win, pixel.IM)
+		helpTxt.Draw(win, pixel.IM)
 
 		win.Update()
 
@@ -157,7 +141,7 @@ func startFreePlay(debugSet bool) {
 		case <-fps:
 		}
 
-		// save memory dump with f9
+		// save memory dump with f9 when debug env var is set
 		if debugSet && win.JustPressed(pixelgl.KeyF9) {
 			fp := "mem.mprof"
 			f, err := os.Create(fp)
@@ -168,4 +152,35 @@ func startFreePlay(debugSet bool) {
 			f.Close()
 		}
 	}
+}
+
+func playBackgroundMusic() {
+	//return
+	//it will extract music assets packed into the binary and play them in the background
+	box := packr.NewBox("./assets")
+
+	// Decode the packed .mp3 file
+	f, err := box.Open("song.mp3")
+	if err != nil {
+		log.Fatal(err)
+	}
+	s, format, _ := mp3.Decode(f)
+	v := effects.Volume{
+		Streamer: s,
+		Base:     2,
+		Volume:   -3,
+	}
+
+	// Init the Speaker with the SampleRate of the format and a buffer size of 1/10s
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	// Initiate control channel
+	playing := make(chan struct{})
+
+	// Play the sound
+	speaker.Play(beep.Seq(&v, beep.Callback(func() {
+		// Callback after the stream Ends
+		close(playing)
+	})))
+	<-playing
 }

@@ -6,9 +6,12 @@ type Bullet struct {
 }
 
 func EnforceMinBulletSpeed(b *Bullet) {
-	if b.Vel().Len() < BulletMinSpeed {
+	b.SetVel(b.Vel().Scaled(BulletMinSpeed / b.Vel().Len()))
+	// all same speed for now
+	/*if b.Vel().Len() < BulletMinSpeed {
 		b.SetVel(b.Vel().Scaled(BulletMinSpeed / b.Vel().Len()))
 	}
+	*/
 }
 
 func deleteBullets(bullets *[]*Bullet, bp *BulletPool) int {
