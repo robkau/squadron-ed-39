@@ -1,4 +1,6 @@
-#Squadron-ED-39
+Squadron-ED-39
+----  
+
 This is a 2D game I created with Go. It compiles to a self contained binary executable that will run on Windows systems with no installation required. 
 
 The game world is simulated with a simple timestepped physics system that I wrote myself.   
@@ -8,6 +10,7 @@ The game world is simulated with a simple timestepped physics system that I wrot
 The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/track/mission) which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
 
 ---
+
 **Story**:  
 You are part of Earth Defense Squad 39 and platforms are attacking from outer space.
 
@@ -18,13 +21,16 @@ You can use stored energy to build turrets, they automatically fire at platforms
 You lose if any platforms reach the bottom of the screen.
 
 ---
+
 **Controls**:  
 Left Click: Place turret (costs 20 Joules)  
 Right Click: Turret blast at mouse cursor (costs 15 Joules)  
 r: Reset world  
 F9: Profile heap and save memory dump (when in debug mode)  
-*Enable debug mode by setting env var 'sq39_debug' before running client.exe, this will also save a CPU profile upon quitting*  
+*Enable debug mode by setting env var 'sq39_debug' before running client.exe, this will also save a CPU profile upon quitting*
+  
 ---
+
 **Build**:  
 First you need to configure your Windows build environment for cgo, see one guide [here](https://github.com/faiface/pixel/wiki/Building-Pixel-on-Windows)  
 
