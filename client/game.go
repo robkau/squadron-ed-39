@@ -2,15 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/effects"
-	"github.com/faiface/beep/mp3"
-	"github.com/faiface/beep/speaker"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
-	"github.com/gobuffalo/packr"
 	"github.com/robkau/squadron-ed-39/physics"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
@@ -66,10 +61,6 @@ func startFreePlay(debugSet bool) {
 	fmt.Fprintf(txt, StatsText, 0, 0, numBullets)
 	fmt.Fprint(storyTxt, StoryText)
 	fmt.Fprint(helpTxt, HelpText)
-
-	// todo: own function
-	// play the background song
-	go playBackgroundMusic()
 
 	var world = physics.NewWorld()
 
@@ -152,35 +143,4 @@ func startFreePlay(debugSet bool) {
 			f.Close()
 		}
 	}
-}
-
-func playBackgroundMusic() {
-	//return
-	//it will extract music assets packed into the binary and play them in the background
-	box := packr.NewBox("./assets")
-
-	// Decode the packed .mp3 file
-	f, err := box.Open("song.mp3")
-	if err != nil {
-		log.Fatal(err)
-	}
-	s, format, _ := mp3.Decode(f)
-	v := effects.Volume{
-		Streamer: s,
-		Base:     2,
-		Volume:   -3,
-	}
-
-	// Init the Speaker with the SampleRate of the format and a buffer size of 1/10s
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-
-	// Initiate control channel
-	playing := make(chan struct{})
-
-	// Play the sound
-	speaker.Play(beep.Seq(&v, beep.Callback(func() {
-		// Callback after the stream Ends
-		close(playing)
-	})))
-	<-playing
 }

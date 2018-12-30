@@ -3,11 +3,18 @@ package physics
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/effects"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/text"
+	"github.com/gobuffalo/packr"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
+	"log"
 	"math"
+	"time"
 )
 
 type world struct {
@@ -38,6 +45,9 @@ func NewWorld() *world {
 	}
 
 	w.AddCollector(pixel.Vec{X: 0, Y: -350})
+
+	// play the background song
+	go playBackgroundMusic()
 
 	return w
 }
@@ -111,4 +121,35 @@ func randomHex(n int) string {
 		panic("failed to read random bytes for hex ID")
 	}
 	return hex.EncodeToString(bytes)
+}
+
+func playBackgroundMusic() {
+	//return
+	//it will extract music assets packed into the binary and play them in the background
+	box := packr.NewBox("../client/assets")
+
+	// Decode the packed .mp3 file
+	f, err := box.Open("song.mp3")
+	if err != nil {
+		log.Fatal(err)
+	}
+	s, format, _ := mp3.Decode(f)
+	v := effects.Volume{
+		Streamer: s,
+		Base:     2,
+		Volume:   -2,
+	}
+
+	// Init the Speaker with the SampleRate of the format and a buffer size of 1/10s
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	// Initiate control channel
+	playing := make(chan struct{})
+
+	// Play the sound
+	speaker.Play(beep.Seq(&v, beep.Callback(func() {
+		// Callback after the stream Ends
+		close(playing)
+	})))
+	<-playing
 }

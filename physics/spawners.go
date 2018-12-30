@@ -4,7 +4,7 @@ import "github.com/faiface/pixel"
 
 type BulletSpawner struct {
 	moveable
-	// todo: control spawn rate with var here
+	// todo: control spawn rate with struct var
 }
 
 func (world *world) SpawnBullet(pos pixel.Vec, dest pixel.Vec) {
@@ -34,7 +34,7 @@ func (bsp *BulletSpawner) pickTarget(world *world) pixel.Vec {
 		return pixel.ZV
 	}
 
-	// todo: make accurate
+	// todo: make accurate, this can fail for large or small cases
 	targetPlatform := world.lowestPlatform()
 	timeToImpact := targetPlatform.Pos().Sub(bsp.Pos()).Len() / BulletMinSpeed
 	firingTarget := targetPlatform.Pos().Add(targetPlatform.Vel().Scaled(timeToImpact))
@@ -74,5 +74,4 @@ func (world *world) SetShooterDestination(dest pixel.Vec) {
 		walkDir := dest.Sub(sh.Pos()).Unit()
 		sh.SetVel(walkDir.Scaled(BulletSpawnerMoveSpeed))
 	}
-
 }

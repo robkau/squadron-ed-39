@@ -3,6 +3,7 @@ package physics
 import "github.com/faiface/pixel"
 
 type BulletPool struct {
+	// preallocate and reuse bullets, they are often destroyed and recreated
 	pool chan *Bullet
 }
 

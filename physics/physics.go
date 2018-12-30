@@ -28,16 +28,15 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 	world.moveBullets(dt)
 	world.checkBulletCollisions()
 
+	// spawn progressively harder enemies
 	if world.iteration%150 == 0 && world.iteration >= 650 {
 		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
 		world.AddPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
 	}
-
 	if world.iteration%80 == 0 && world.iteration >= 2000 {
 		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
 		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
-
 	if world.iteration%4 == 0 && world.iteration >= 3500 {
 		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
 		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
@@ -67,7 +66,6 @@ func (world *world) spawnBullets(mp pixel.Vec) {
 }
 
 func (world *world) moveBullets(dt float64) {
-
 	for _, b := range world.bullets {
 		// update bullet position
 		b.move(dt)
@@ -76,6 +74,7 @@ func (world *world) moveBullets(dt float64) {
 }
 
 func (world *world) checkBulletCollisions() {
+	// check each bullet for collisions
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
 			continue
@@ -116,6 +115,7 @@ func (world *world) checkBulletCollisions() {
 }
 
 func (world *world) Draw(imd *imdraw.IMDraw) {
+	// translate game world into drawn shapes
 	imd.Color = redColor()
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
