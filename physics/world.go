@@ -33,20 +33,18 @@ func NewWorld() *world {
 		BulletPool: NewPool(BulletPoolSize),
 		atlas:      text.NewAtlas(basicfont.Face7x13, text.ASCII),
 	}
+	w.AddCollector(pixel.Vec{X: 0, Y: -350})
 
-	w.AddPlatform(pixel.Rect{Min: pixel.Vec{X: -300, Y: -500}, Max: pixel.Vec{X: 300, Y: -450}}, pixel.Vec{X: 50, Y: 300}, 50)
-	w.AddPlatform(pixel.Rect{Min: pixel.Vec{X: -500, Y: -500}, Max: pixel.Vec{X: -475, Y: -450}}, pixel.Vec{X: 50, Y: 300}, 50)
-
-	w.AddCollector(pixel.Vec{X: -100, Y: -250})
-	w.AddCollector(pixel.Vec{X: 100, Y: -350})
-
-	w.AddShooter(pixel.Vec{X: -100, Y: 0}, true)
-	w.AddShooter(pixel.Vec{X: 100, Y: 0}, false)
+	w.AddShooter(pixel.Vec{X: -15, Y: -450})
+	w.AddShooter(pixel.Vec{X: 0, Y: -450})
+	w.AddShooter(pixel.Vec{X: 15, Y: -450})
 	return w
 }
 
 func (world *world) AddPlatform(pos pixel.Rect, dest pixel.Vec, health int) {
-	p := &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pos, dest: dest, vel: pixel.Vec{X: 3, Y: 10}},
+	dir := dest.Sub(pos.Center())
+	pVel := dir.Scaled(PlatformSpeed / dir.Len())
+	p := &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pos, dest: dest, vel: pVel},
 		Health: 50, Color: pixel.RGB(0.1, 0.5, 0.8),
 		UniqueId: randomHex(16)}
 	world.platforms = append(world.platforms, p)
@@ -60,8 +58,8 @@ func (world *world) AddCollector(pos pixel.Vec) {
 	world.colliders = append(world.colliders, cl)
 }
 
-func (world *world) AddShooter(pos pixel.Vec, stopAtDest bool) {
-	sh := &BulletSpawner{&LinearPointMovingStrategy{pos: pos, stopAtDest: stopAtDest}}
+func (world *world) AddShooter(pos pixel.Vec) {
+	sh := &BulletSpawner{&LinearPointMovingStrategy{pos: pos, stopAtDest: true}}
 	world.shooters = append(world.shooters, sh)
 }
 
@@ -71,6 +69,10 @@ func (world *world) NumBullets() int {
 
 func (world *world) EnergyCount() int {
 	return world.energyCount
+}
+
+func (world *world) SubEnergy(e int) {
+	world.energyCount -= e
 }
 
 func randomHex(n int) string {

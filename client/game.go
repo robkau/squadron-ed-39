@@ -110,8 +110,11 @@ func startFreePlay(debugSet bool) {
 		}
 
 		// move shooters towards mouse location on left click or mouse scroll
-		if win.JustPressed(pixelgl.MouseButtonLeft) || win.MouseScroll().Y != 0 {
-			world.SetShooterDestination(mp)
+		if win.JustPressed(pixelgl.MouseButtonLeft) {
+			if world.EnergyCount() >= 20 {
+				world.AddShooter(mp)
+				world.SubEnergy(20)
+			}
 		}
 
 		// bullet spray with right click

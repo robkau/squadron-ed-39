@@ -10,6 +10,7 @@ const (
 	MaxBulletBound         float64 = 525
 	MaxWindowBound                 = 500
 	BulletMinSpeed         float64 = 30
+	PlatformSpeed          float64 = 10
 	BulletPoolSize                 = 2000
 	BulletSpawnModulo              = 25
 	BulletSpawnerMoveSpeed         = 25
@@ -25,6 +26,11 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 	world.spawnBullets(mp)
 	world.moveBullets(dt)
 	world.checkBulletCollisions()
+
+	if world.iteration%100 == 0 {
+		xPos := float64((world.iteration%MaxWindowBound)*2 - MaxWindowBound/2)
+		world.AddPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
+	}
 
 	world.iteration += 1
 }
