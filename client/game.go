@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/faiface/beep"
+	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/pixel"
@@ -55,11 +56,11 @@ func startFreePlay(debugSet bool) {
 
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	txt := text.New(pixel.V(physics.MaxWindowBound, physics.MaxWindowBound-50), atlas)
+	txt := text.New(pixel.V(physics.MaxWindowBound+15, physics.MaxWindowBound-50), atlas)
 	txt.Color = colornames.Lightgrey
 	numBullets := 0
 	lastNumBullets := -999
-	fmt.Fprintf(txt, "%d bullets", numBullets)
+	fmt.Fprintf(txt, "%d bullets\n%d joules", numBullets, 0)
 
 	// todo: own function
 	// play the background song
@@ -74,6 +75,11 @@ func startFreePlay(debugSet bool) {
 			log.Fatal(err)
 		}
 		s, format, _ := mp3.Decode(f)
+		v := effects.Volume{
+			Streamer: s,
+			Base:     2,
+			Volume:   -4,
+		}
 
 		// Init the Speaker with the SampleRate of the format and a buffer size of 1/10s
 		speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
@@ -82,7 +88,7 @@ func startFreePlay(debugSet bool) {
 		playing := make(chan struct{})
 
 		// Play the sound
-		speaker.Play(beep.Seq(s, beep.Callback(func() {
+		speaker.Play(beep.Seq(&v, beep.Callback(func() {
 			// Callback after the stream Ends
 			close(playing)
 		})))
@@ -94,16 +100,21 @@ func startFreePlay(debugSet bool) {
 	for !win.Closed() {
 		dt := physics.Dt
 		mp := win.MousePosition().Sub(GameOffset) // rebase towards game canvas
+		if mp.X > physics.MaxWindowBound {
+			mp.X = physics.MaxWindowBound
+		}
 
 		// slow motion with tab
 		if win.Pressed(pixelgl.KeyTab) {
 			dt /= physics.SlowdownFactor
 		}
 
+		// move shooters towards mouse location on left click or mouse scroll
 		if win.JustPressed(pixelgl.MouseButtonLeft) || win.MouseScroll().Y != 0 {
 			world.SetShooterDestination(mp)
 		}
 
+		// bullet spray with right click
 		if win.JustPressed(pixelgl.MouseButtonRight) {
 			world.BulletSpray(mp)
 		}
@@ -111,9 +122,9 @@ func startFreePlay(debugSet bool) {
 		// step physics forward
 		world.Update(dt, mp)
 
-		// draw updated scene to
+		// draw updated scene
 		gameCanvas.Clear(colornames.Black)
-		statCanvas.Clear(colornames.Blue)
+		statCanvas.Clear(colornames.Darkblue)
 		imd.Clear()
 		world.Draw(imd)
 		imd.Draw(gameCanvas)
@@ -128,7 +139,7 @@ func startFreePlay(debugSet bool) {
 		numBullets = world.NumBullets()
 		if numBullets != lastNumBullets {
 			txt.Clear()
-			fmt.Fprintf(txt, "%d bullets", numBullets)
+			fmt.Fprintf(txt, "%d bullets\n%d joules", numBullets, world.EnergyCount())
 			lastNumBullets = numBullets
 		}
 		txt.Draw(win, pixel.IM)

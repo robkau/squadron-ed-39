@@ -25,6 +25,13 @@ func redColor() pixel.RGBA {
 	return pixel.RGB(r, g, b)
 }
 
+func collectorColor() pixel.RGBA {
+	r := 0.0
+	g := 1.0
+	b := 0.0
+	return pixel.RGB(r, g, b)
+}
+
 func Abs(x float64) float64 {
 	if x < 0 {
 		return -x

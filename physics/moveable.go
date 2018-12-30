@@ -107,6 +107,10 @@ type LinearRectMovingStrategy struct {
 	dest pixel.Vec
 }
 
+func (rect *LinearRectMovingStrategy) Rect() pixel.Rect {
+	return rect.rect
+}
+
 func (rect *LinearRectMovingStrategy) Pos() pixel.Vec {
 	return rect.rect.Center()
 }
@@ -118,6 +122,10 @@ func (rect *LinearRectMovingStrategy) SetPos(pos pixel.Vec) {
 	rect.rect.Min.Y = pos.Y - dy
 	rect.rect.Max.X = pos.X + dx
 	rect.rect.Max.Y = pos.Y + dy
+}
+
+func (rect *LinearRectMovingStrategy) Contains(b *Bullet) bool {
+	return rect.rect.Contains(b.Pos())
 }
 
 func (rect *LinearRectMovingStrategy) Vel() pixel.Vec {

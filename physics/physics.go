@@ -20,11 +20,8 @@ const (
 )
 
 func (world *world) Update(dt float64, mp pixel.Vec) {
-
 	world.movePlatforms(dt)
-	//world.checkPlatformCollisions()
 	world.moveShooters(dt)
-	//world.checkShooterCollisions()
 	world.spawnBullets(mp)
 	world.moveBullets(dt)
 	world.checkBulletCollisions()
@@ -62,7 +59,6 @@ func (world *world) moveBullets(dt float64) {
 }
 
 func (world *world) checkBulletCollisions() {
-	deadBullet := false
 	for _, b := range world.bullets {
 		if b == nil || b.collided {
 			continue
@@ -70,36 +66,34 @@ func (world *world) checkBulletCollisions() {
 
 		if b.Vel().X == 0 && b.Vel().Y == 0 {
 			b.collided = true
-			deadBullet = true
+			world.deadBullet = true
 			continue
 		}
 
 		if b.outOfBounds() {
-			deadBullet = true
+			world.deadBullet = true
 			continue
 		}
 
 		// collision detection
 		// todo: quadtree instead of brute force
-		deadPlatform := false
-		for _, p := range world.platforms {
-			if p.rect.Contains(b.Pos()) && p.Health > 0 {
-				b.collided = true
-				deadBullet = true
-				p.Health -= 1
-				if p.Health <= 0 {
-					deadPlatform = true
-				}
+		for _, p := range world.colliders {
+			if p.Contains(b) {
+				p.Collide(b, world)
 				break
 			}
+
 		}
+
 		// clear dead platforms if needed
-		if deadPlatform {
-			deletePlatforms(&world.platforms)
+		if world.deadPlatform {
+			deletePlatforms(&world.platforms, &world.colliders)
+			world.deadPlatform = false
 		}
 		// clear dead bullets if needed
-		if deadBullet {
+		if world.deadBullet {
 			world.bulletCounter -= deleteBullets(&world.bullets, world.BulletPool)
+			world.deadBullet = false
 		}
 	}
 }
@@ -125,4 +119,10 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		imd.Push(sh.Pos())
 	}
 	imd.Circle(5, 0)
+
+	imd.Color = collectorColor()
+	for _, cl := range world.collectors {
+		imd.Push(cl.Rect().Min, cl.Rect().Max)
+		imd.Rectangle(3)
+	}
 }
