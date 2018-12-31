@@ -3,8 +3,10 @@ Squadron-ED-39
 
 This is a 2D game I created with Go. It compiles to a self contained binary executable that will run on Windows systems with no installation required. 
 
-The game world is simulated with a simple timestepped physics and collision detection system that I created.   
+The game world is simulated with a timestepped physics and collision detection system.  
+   
 [pixel](https://github.com/faiface/pixel) game library is used to render the world to an OpenGL desktop window at 60 FPS. It also provides useful vector structs and the ability to play sound.  
+  
 [Packr](https://github.com/gobuffalo/packr) is used to store music assets inside the .exe during build time.
 
 The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/track/mission) which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
