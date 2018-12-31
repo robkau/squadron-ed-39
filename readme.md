@@ -44,6 +44,6 @@ F9: Profile heap and save memory dump (when in debug mode)
 ```
 go get github.com/robkau/squadron-ed-39
 cd ~/go/src/github.com/robkau/squadron-ed-39/client  
-packr build  
+packr build -o client.exe
 ./client.exe
 ```
