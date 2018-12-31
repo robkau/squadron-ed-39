@@ -34,11 +34,11 @@ F9: Profile heap and save memory dump (when in debug mode)
 ---
 
 # How to play:
-####Easy option) Download binary
+###Easy option) Download binary
  - Download the game from the **releases** tab and run client.exe
 
 
-####Hard option) Build the game from source
+###Hard option) Build the game from source
  - First you need to configure your Windows build environment for cgo, see one guide [here](https://github.com/faiface/pixel/wiki/Building-Pixel-on-Windows)  
  - Afterwards:
 ```
