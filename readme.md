@@ -34,8 +34,8 @@ F9: Profile heap and save memory dump (when in debug mode)
 ---
 
 ## How to play:
-#### Easy option) Download binary
- - Download the game from the **releases** tab and run client.exe
+#### Easy option) Download and run binary
+ - Download the game from the **releases** tab and run client.exe, from [this link](https://github.com/robkau/squadron-ed-39/releases/download/0.1/client.exe)
 
 
 #### Hard option) Build the game from source
