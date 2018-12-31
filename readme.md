@@ -9,7 +9,7 @@ The game world is simulated with a timestepped physics and collision detection s
   
 [Packr](https://github.com/gobuffalo/packr) is used to store music assets inside the .exe during build time.
 
-The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/track/mission) which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
+The background music is "Mission" by BoxCat Games which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
 
 
 ---
