@@ -125,7 +125,7 @@ func randomHex(n int) string {
 
 func playBackgroundMusic() {
 	//extract music assets packed into the binary and play them in the background
-	box := packr.NewBox("../client/assets")
+	box := packr.NewBox("./assets")
 
 	// Decode the packed .mp3 file
 	f, err := box.Open("song.mp3")

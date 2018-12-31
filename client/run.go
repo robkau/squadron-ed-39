@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gobuffalo/packr"
 	"log"
 	"math/rand"
 	"os"
@@ -21,6 +22,9 @@ func run() {
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
+
+	// ensure assets from this module are packed to the binary
+	packr.NewBox("./assets")
 
 	startFreePlay(debugSet)
 }
