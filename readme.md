@@ -10,10 +10,6 @@ The game world is simulated with a simple timestepped physics and collision dete
 The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/track/mission) which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
 
 
-<details><summary>Click for gameplay gif</summary>
-![gameplay](https://github.com/robkau/squadron-ed-39/blob/master/gameplay.gif)
-</details>
-
 ---
 
 **Story**:  
@@ -52,3 +48,5 @@ cd ~/go/src/github.com/robkau/squadron-ed-39/client
 packr build -o client.exe
 ./client.exe
 ```
+
+![gameplay](https://github.com/robkau/squadron-ed-39/blob/master/gameplay.gif)
