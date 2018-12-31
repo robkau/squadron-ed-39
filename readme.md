@@ -9,6 +9,10 @@ The game world is simulated with a simple timestepped physics and collision dete
 
 The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/track/mission) which was retrieved and shared under the [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/) license.
 
+
+<details><summary>Click for gameplay gif</summary>
+![](gameplay.gif)
+</details>
 ---
 
 **Story**:  
