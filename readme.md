@@ -11,8 +11,9 @@ The background music is ["Mission" by BoxCat Games](https://boxcat.bandcamp.com/
 
 
 <details><summary>Click for gameplay gif</summary>
-![](gameplay.gif)
+![gameplay](https://github.com/robkau/squadron-ed-39/raw/master/gameplay.gif)
 </details>
+
 ---
 
 **Story**:  
