@@ -18,7 +18,9 @@ You were sent with one energy collector than can absorb projectiles to store 1 J
 
 You can use stored energy to build turrets, they automatically fire at platforms, with some degree of accuracy.
 
-You lose if any platforms reach the bottom of the screen.
+You lose if any platforms reach the bottom of the screen.  
+
+*Tip: Build your first turrets under the green square to guarantee steady energy supply (left click)*
 
 ---
 
