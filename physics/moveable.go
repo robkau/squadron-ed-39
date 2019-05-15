@@ -4,91 +4,91 @@ import "github.com/faiface/pixel"
 
 type moveable interface {
 	move(float64) bool
-	Pos() pixel.Vec
-	SetPos(pixel.Vec)
-	Vel() pixel.Vec
-	SetVel(pixel.Vec)
-	Dest() pixel.Vec
-	SetDest(pixel.Vec)
+	pos() pixel.Vec
+	setPos(pixel.Vec)
+	vel() pixel.Vec
+	setVel(pixel.Vec)
+	dest() pixel.Vec
+	setDest(pixel.Vec)
 }
 
-type LinearPointMovingStrategy struct {
-	pos        pixel.Vec
-	vel        pixel.Vec
-	dest       pixel.Vec
+type linearPointMovingStrategy struct {
+	p          pixel.Vec
+	v          pixel.Vec
+	dst        pixel.Vec
 	stopAtDest bool
 }
 
-func (point *LinearPointMovingStrategy) Pos() pixel.Vec {
-	return point.pos
+func (point *linearPointMovingStrategy) pos() pixel.Vec {
+	return point.p
 }
 
-func (point *LinearPointMovingStrategy) SetPos(pos pixel.Vec) {
-	point.pos = pos
+func (point *linearPointMovingStrategy) setPos(pos pixel.Vec) {
+	point.p = pos
 }
 
-func (point *LinearPointMovingStrategy) Vel() pixel.Vec {
-	return point.vel
+func (point *linearPointMovingStrategy) vel() pixel.Vec {
+	return point.v
 }
 
-func (point *LinearPointMovingStrategy) SetVel(vel pixel.Vec) {
-	point.vel = vel
+func (point *linearPointMovingStrategy) setVel(vel pixel.Vec) {
+	point.v = vel
 }
 
-func (point *LinearPointMovingStrategy) Dest() pixel.Vec {
-	return point.dest
+func (point *linearPointMovingStrategy) dest() pixel.Vec {
+	return point.dst
 }
 
-func (point *LinearPointMovingStrategy) SetDest(dest pixel.Vec) {
-	point.dest = dest
+func (point *linearPointMovingStrategy) setDest(dest pixel.Vec) {
+	point.dst = dest
 }
 
-func (point *LinearPointMovingStrategy) move(dt float64) bool {
+func (point *linearPointMovingStrategy) move(dt float64) bool {
 	arrivedOneAxis := false
 
 	// sitting at destination
-	if point.pos == point.dest {
+	if point.p == point.dst {
 		return true
 	}
 
-	if point.vel != pixel.ZV {
+	if point.v != pixel.ZV {
 		// move toward destination
-		point.pos = point.pos.Add(point.vel.Scaled(dt))
+		point.p = point.p.Add(point.v.Scaled(dt))
 
 		if point.stopAtDest {
 			// arrived perfectly at destination
-			if point.pos == point.dest {
-				point.vel = pixel.ZV
+			if point.p == point.dst {
+				point.v = pixel.ZV
 				return true
 			}
 
 			// overshot destination
-			if point.vel.X >= 0 {
-				if point.pos.X > point.dest.X {
-					point.pos.X = point.dest.X
-					point.vel.X = 0
+			if point.v.X >= 0 {
+				if point.p.X > point.dst.X {
+					point.p.X = point.dst.X
+					point.v.X = 0
 					arrivedOneAxis = true
 				}
 			} else {
-				if point.pos.X < point.dest.X {
-					point.pos.X = point.dest.X
-					point.vel.X = 0
+				if point.p.X < point.dst.X {
+					point.p.X = point.dst.X
+					point.v.X = 0
 					arrivedOneAxis = true
 				}
 			}
 
-			if point.vel.Y >= 0 {
-				if point.pos.Y > point.dest.Y {
-					point.pos.Y = point.dest.Y
-					point.vel.Y = 0
+			if point.v.Y >= 0 {
+				if point.p.Y > point.dst.Y {
+					point.p.Y = point.dst.Y
+					point.v.Y = 0
 					if arrivedOneAxis {
 						return true
 					}
 				}
 			} else {
-				if point.pos.Y < point.dest.Y {
-					point.pos.Y = point.dest.Y
-					point.vel.Y = 0
+				if point.p.Y < point.dst.Y {
+					point.p.Y = point.dst.Y
+					point.v.Y = 0
 					if arrivedOneAxis {
 						return true
 					}
@@ -101,94 +101,94 @@ func (point *LinearPointMovingStrategy) move(dt float64) bool {
 	return false
 }
 
-type LinearRectMovingStrategy struct {
-	rect pixel.Rect
-	vel  pixel.Vec
-	dest pixel.Vec
+type linearRectMovingStrategy struct {
+	r   pixel.Rect
+	v   pixel.Vec
+	dst pixel.Vec
 }
 
-func (rect *LinearRectMovingStrategy) Rect() pixel.Rect {
-	return rect.rect
+func (rect *linearRectMovingStrategy) rect() pixel.Rect {
+	return rect.r
 }
 
-func (rect *LinearRectMovingStrategy) Pos() pixel.Vec {
-	return rect.rect.Center()
+func (rect *linearRectMovingStrategy) pos() pixel.Vec {
+	return rect.r.Center()
 }
 
-func (rect *LinearRectMovingStrategy) SetPos(pos pixel.Vec) {
-	dx := rect.rect.W() / 2
-	dy := rect.rect.H() / 2
-	rect.rect.Min.X = pos.X - dx
-	rect.rect.Min.Y = pos.Y - dy
-	rect.rect.Max.X = pos.X + dx
-	rect.rect.Max.Y = pos.Y + dy
+func (rect *linearRectMovingStrategy) setPos(pos pixel.Vec) {
+	dx := rect.r.W() / 2
+	dy := rect.r.H() / 2
+	rect.r.Min.X = pos.X - dx
+	rect.r.Min.Y = pos.Y - dy
+	rect.r.Max.X = pos.X + dx
+	rect.r.Max.Y = pos.Y + dy
 }
 
-func (rect *LinearRectMovingStrategy) Contains(b *Bullet) bool {
-	return rect.rect.Contains(b.Pos())
+func (rect *linearRectMovingStrategy) contains(b *bullet) bool {
+	return rect.r.Contains(b.pos())
 }
 
-func (rect *LinearRectMovingStrategy) Vel() pixel.Vec {
-	return rect.vel
+func (rect *linearRectMovingStrategy) vel() pixel.Vec {
+	return rect.v
 }
 
-func (rect *LinearRectMovingStrategy) SetVel(vel pixel.Vec) {
-	rect.vel = vel
+func (rect *linearRectMovingStrategy) setVel(vel pixel.Vec) {
+	rect.v = vel
 }
 
-func (rect *LinearRectMovingStrategy) Dest() pixel.Vec {
-	return rect.dest
+func (rect *linearRectMovingStrategy) dest() pixel.Vec {
+	return rect.dst
 }
 
-func (rect *LinearRectMovingStrategy) SetDest(dest pixel.Vec) {
-	rect.dest = dest
+func (rect *linearRectMovingStrategy) setDest(dest pixel.Vec) {
+	rect.dst = dest
 }
 
-func (rect *LinearRectMovingStrategy) move(dt float64) (arrived bool) {
+func (rect *linearRectMovingStrategy) move(dt float64) (arrived bool) {
 	arrivedOneAxis := false
 
 	// sitting at destination
-	if rect.rect.Center() == rect.dest {
+	if rect.r.Center() == rect.dst {
 		return true
 	}
 
-	if rect.vel != pixel.ZV {
+	if rect.v != pixel.ZV {
 		// move toward destination
-		rect.SetPos(rect.rect.Center().Add(rect.vel.Scaled(dt)))
+		rect.setPos(rect.r.Center().Add(rect.v.Scaled(dt)))
 
 		// arrived perfectly at destination
-		if rect.rect.Center() == rect.dest {
-			rect.vel = pixel.ZV
+		if rect.r.Center() == rect.dst {
+			rect.v = pixel.ZV
 			return true
 		}
 
 		// overshot destination
-		if rect.vel.X >= 0 {
-			if rect.rect.Center().X > rect.dest.X {
-				rect.SetPos(pixel.Vec{X: rect.dest.X, Y: rect.rect.Center().Y})
-				rect.vel.X = 0
+		if rect.v.X >= 0 {
+			if rect.r.Center().X > rect.dst.X {
+				rect.setPos(pixel.Vec{X: rect.dst.X, Y: rect.r.Center().Y})
+				rect.v.X = 0
 				arrivedOneAxis = true
 			}
 		} else {
-			if rect.rect.Center().X < rect.dest.X {
-				rect.SetPos(pixel.Vec{X: rect.dest.X, Y: rect.rect.Center().Y})
-				rect.vel.X = 0
+			if rect.r.Center().X < rect.dst.X {
+				rect.setPos(pixel.Vec{X: rect.dst.X, Y: rect.r.Center().Y})
+				rect.v.X = 0
 				arrivedOneAxis = true
 			}
 		}
 
-		if rect.vel.Y >= 0 {
-			if rect.rect.Center().Y > rect.dest.Y {
-				rect.SetPos(pixel.Vec{X: rect.rect.Center().X, Y: rect.dest.Y})
-				rect.vel.Y = 0
+		if rect.v.Y >= 0 {
+			if rect.r.Center().Y > rect.dst.Y {
+				rect.setPos(pixel.Vec{X: rect.r.Center().X, Y: rect.dst.Y})
+				rect.v.Y = 0
 				if arrivedOneAxis {
 					return true
 				}
 			}
 		} else {
-			if rect.rect.Center().Y < rect.dest.Y {
-				rect.SetPos(pixel.Vec{X: rect.rect.Center().X, Y: rect.dest.Y})
-				rect.vel.Y = 0
+			if rect.r.Center().Y < rect.dst.Y {
+				rect.setPos(pixel.Vec{X: rect.r.Center().X, Y: rect.dst.Y})
+				rect.v.Y = 0
 				if arrivedOneAxis {
 					return true
 				}

@@ -82,20 +82,12 @@ func startFreePlay(debugSet bool) {
 			world = physics.NewWorld(gwSize)
 		}
 
-		// move shooters towards mouse location on left click or mouse scroll
+		// notify world of relevant input
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
-			if world.EnergyCount() >= 20 {
-				world.AddShooter(mp)
-				world.SubEnergy(20)
-			}
+			world.ProcessInput(pixelgl.MouseButtonLeft, mp)
 		}
-
-		// bullet spray with right click
 		if win.JustPressed(pixelgl.MouseButtonRight) {
-			if world.EnergyCount() >= 15 {
-				world.BulletSpray(mp)
-				world.SubEnergy(15)
-			}
+			world.ProcessInput(pixelgl.MouseButtonRight, mp)
 		}
 
 		// step physics forward

@@ -1,7 +1,7 @@
 package physics
 
 type collideable interface {
-	Contains(*Bullet) bool
-	Collide(*Bullet, *world)
-	Id() string
+	contains(*bullet) bool
+	collide(*bullet, *world)
+	id() string
 }

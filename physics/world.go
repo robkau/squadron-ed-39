@@ -8,6 +8,8 @@ import (
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	"github.com/gobuffalo/packr"
 	"golang.org/x/image/colornames"
@@ -17,13 +19,25 @@ import (
 	"time"
 )
 
+type World interface {
+	Update(dt float64, mp pixel.Vec)
+	Draw(imd *imdraw.IMDraw)
+	ProcessInput(button pixelgl.Button, mp pixel.Vec)
+
+	// todo: collapse world state into one struct
+	NumBullets() int
+	NumPlatforms() int
+	EnergyCount() int
+	CheckLoseCondition() bool
+}
+
 type world struct {
 	shooters      []*BulletSpawner
-	bullets       []*Bullet
+	bullets       []*bullet
 	platforms     []*platform
 	collectors    []*collector
 	colliders     []collideable
-	BulletPool    *BulletPool
+	BulletPool    *bulletPool
 	iteration     int
 	bulletCounter int
 	energyCount   int
@@ -33,20 +47,20 @@ type world struct {
 	size          float64
 }
 
-func NewWorld(size int) *world {
+func NewWorld(size int) World {
 	w := &world{
 		shooters:    make([]*BulletSpawner, 0),
-		bullets:     make([]*Bullet, 0),
+		bullets:     make([]*bullet, 0),
 		platforms:   make([]*platform, 0),
 		collectors:  make([]*collector, 0),
 		colliders:   make([]collideable, 0),
-		BulletPool:  NewPool(BulletPoolSize),
+		BulletPool:  newPool(BulletPoolSize),
 		atlas:       text.NewAtlas(basicfont.Face7x13, text.ASCII),
 		energyCount: 40,
 		size:        float64(size),
 	}
 
-	w.AddCollector(pixel.Vec{X: 0, Y: -350})
+	w.addCollector(pixel.Vec{X: 0, Y: -350})
 
 	// play the background song
 	go playBackgroundMusic()
@@ -54,29 +68,45 @@ func NewWorld(size int) *world {
 	return w
 }
 
-func (world *world) AddPlatform(pos pixel.Rect, dest pixel.Vec, health int) {
-	dir := dest.Sub(pos.Center())
-	pVel := dir.Scaled(PlatformSpeed / dir.Len())
-	world.AddPlatformWithV(pos, dest, pVel, health)
+func (world *world) ProcessInput(button pixelgl.Button, mp pixel.Vec) {
+	// move shooters towards mouse location on left click or mouse scroll
+	switch button {
+	case pixelgl.MouseButtonLeft:
+		if world.EnergyCount() >= 20 {
+			world.addShooter(mp)
+			world.subEnergy(20)
+		}
+	case pixelgl.MouseButtonRight:
+		if world.EnergyCount() >= 15 {
+			world.bulletSpray(mp)
+			world.subEnergy(15)
+		}
+	}
 }
 
-func (world *world) AddPlatformWithV(pos pixel.Rect, dest pixel.Vec, vel pixel.Vec, health int) {
-	p := &platform{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pos, dest: dest, vel: vel},
+func (world *world) addPlatform(pos pixel.Rect, dest pixel.Vec, health int) {
+	dir := dest.Sub(pos.Center())
+	pVel := dir.Scaled(PlatformSpeed / dir.Len())
+	world.addPlatformWithV(pos, dest, pVel, health)
+}
+
+func (world *world) addPlatformWithV(pos pixel.Rect, dest pixel.Vec, vel pixel.Vec, health int) {
+	p := &platform{linearRectMovingStrategy: linearRectMovingStrategy{r: pos, dst: dest, v: vel},
 		Health: health, Color: colornames.Lightseagreen,
 		UniqueId: randomHex(16)}
 	world.platforms = append(world.platforms, p)
 	world.colliders = append(world.colliders, p)
 }
 
-func (world *world) AddCollector(pos pixel.Vec) {
-	cl := &collector{LinearRectMovingStrategy: LinearRectMovingStrategy{rect: pixel.Rect{Min: pos.Sub(pixel.Vec{X: 25, Y: 25}), Max: pos.Add(pixel.Vec{X: 25, Y: 25})}},
-		UniqueId: randomHex(16)}
+func (world *world) addCollector(pos pixel.Vec) {
+	cl := &collector{linearRectMovingStrategy: linearRectMovingStrategy{r: pixel.Rect{Min: pos.Sub(pixel.Vec{X: 25, Y: 25}), Max: pos.Add(pixel.Vec{X: 25, Y: 25})}},
+		uniqueId: randomHex(16)}
 	world.collectors = append(world.collectors, cl)
 	world.colliders = append(world.colliders, cl)
 }
 
-func (world *world) AddShooter(pos pixel.Vec) {
-	sh := &BulletSpawner{&LinearPointMovingStrategy{pos: pos, stopAtDest: true}}
+func (world *world) addShooter(pos pixel.Vec) {
+	sh := &BulletSpawner{&linearPointMovingStrategy{p: pos, stopAtDest: true}}
 	world.shooters = append(world.shooters, sh)
 }
 
@@ -92,7 +122,7 @@ func (world *world) EnergyCount() int {
 	return world.energyCount
 }
 
-func (world *world) SubEnergy(e int) {
+func (world *world) subEnergy(e int) {
 	world.energyCount -= e
 }
 
@@ -100,8 +130,8 @@ func (world *world) lowestPlatform() *platform {
 	lowest := math.Inf(1)
 	lowestIndex := -1
 	for i, p := range world.platforms {
-		if p.Pos().Y < lowest {
-			lowest = p.Pos().Y
+		if p.pos().Y < lowest {
+			lowest = p.pos().Y
 			lowestIndex = i
 		}
 	}
@@ -110,7 +140,7 @@ func (world *world) lowestPlatform() *platform {
 
 func (world *world) CheckLoseCondition() bool {
 	for _, pl := range world.platforms {
-		if pl.Pos().Y < -world.size {
+		if pl.pos().Y < -world.size {
 			return true
 		}
 	}

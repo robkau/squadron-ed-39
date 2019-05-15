@@ -2,33 +2,33 @@ package physics
 
 import "github.com/faiface/pixel"
 
-type BulletPool struct {
+type bulletPool struct {
 	// preallocate and reuse bullets, they are often destroyed and recreated
-	pool chan *Bullet
+	pool chan *bullet
 }
 
-func NewPool(max int) *BulletPool {
-	return &BulletPool{
-		pool: make(chan *Bullet, max),
+func newPool(max int) *bulletPool {
+	return &bulletPool{
+		pool: make(chan *bullet, max),
 	}
 }
 
-func (p *BulletPool) Get() *Bullet {
-	var b *Bullet
+func (p *bulletPool) get() *bullet {
+	var b *bullet
 	select {
 	case b = <-p.pool:
 	default:
-		b = &Bullet{LinearPointMovingStrategy: LinearPointMovingStrategy{}}
+		b = &bullet{linearPointMovingStrategy: linearPointMovingStrategy{}}
 	}
 
 	return b
 }
 
-func (p *BulletPool) Put(b *Bullet) {
+func (p *bulletPool) put(b *bullet) {
 	b.collided = false
-	b.SetDest(pixel.ZV)
-	b.SetPos(pixel.ZV)
-	b.SetVel(pixel.ZV)
+	b.setDest(pixel.ZV)
+	b.setPos(pixel.ZV)
+	b.setVel(pixel.ZV)
 	select {
 	case p.pool <- b:
 	default:

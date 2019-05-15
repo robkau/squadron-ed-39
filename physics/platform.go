@@ -5,13 +5,13 @@ import (
 )
 
 type platform struct {
-	LinearRectMovingStrategy
+	linearRectMovingStrategy
 	Color    color.Color
 	Health   int
 	UniqueId string
 }
 
-func (pl *platform) Collide(b *Bullet, world *world) {
+func (pl *platform) collide(b *bullet, world *world) {
 	b.collided = true
 	world.deadBullet = true
 	pl.Health -= 1
@@ -20,7 +20,7 @@ func (pl *platform) Collide(b *Bullet, world *world) {
 	}
 }
 
-func (pl *platform) Id() string {
+func (pl *platform) id() string {
 	return pl.UniqueId
 
 }
@@ -28,7 +28,7 @@ func (pl *platform) Id() string {
 func deletePlatforms(platforms *[]*platform, collideables *[]collideable) {
 	for i, p := range *platforms {
 		if p != nil && p.Health <= 0 {
-			pid := p.Id()
+			pid := p.id()
 			// remove from world platforms slice
 			(*platforms)[i] = (*platforms)[len(*platforms)-1]
 			// dereference dead platform
@@ -38,7 +38,7 @@ func deletePlatforms(platforms *[]*platform, collideables *[]collideable) {
 
 			// remove from world collideables slice
 			for j, c := range *collideables {
-				if c != nil && pid == c.Id() {
+				if c != nil && pid == c.id() {
 					(*collideables)[j] = (*collideables)[len(*collideables)-1]
 					// dereference dead platform
 					(*collideables)[len(*collideables)-1] = nil

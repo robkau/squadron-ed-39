@@ -1,16 +1,16 @@
 package physics
 
 type collector struct {
-	LinearRectMovingStrategy
-	UniqueId string
+	linearRectMovingStrategy
+	uniqueId string
 }
 
-func (cl *collector) Collide(b *Bullet, world *world) {
+func (cl *collector) collide(b *bullet, world *world) {
 	b.collided = true
 	world.deadBullet = true
 	world.energyCount += 1
 }
 
-func (cl *collector) Id() string {
-	return cl.UniqueId
+func (cl *collector) id() string {
+	return cl.uniqueId
 }

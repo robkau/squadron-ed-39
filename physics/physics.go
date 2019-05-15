@@ -30,15 +30,15 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 	// spawn progressively harder enemies
 	if world.iteration%150 == 0 && world.iteration >= 650 {
 		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
-		world.AddPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
+		world.addPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
 	}
 	if world.iteration%80 == 0 && world.iteration >= 2000 {
 		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
-		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
+		world.addPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
 	if world.iteration%4 == 0 && world.iteration >= 3500 {
 		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
-		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
+		world.addPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
 
 	world.iteration += 1
@@ -79,7 +79,7 @@ func (world *world) checkBulletCollisions() {
 			continue
 		}
 
-		if b.Vel().X == 0 && b.Vel().Y == 0 {
+		if b.vel().X == 0 && b.vel().Y == 0 {
 			b.collided = true
 			world.deadBullet = true
 			continue
@@ -93,8 +93,8 @@ func (world *world) checkBulletCollisions() {
 		// collision detection
 		// todo: quadtree instead of brute force
 		for _, p := range world.colliders {
-			if p.Contains(b) {
-				p.Collide(b, world)
+			if p.contains(b) {
+				p.collide(b, world)
 				break
 			}
 
@@ -120,25 +120,25 @@ func (world *world) Draw(imd *imdraw.IMDraw) {
 		if b == nil || b.collided {
 			continue
 		}
-		imd.Push(b.Pos())
+		imd.Push(b.pos())
 	}
 	imd.Circle(3, 0)
 
 	for _, p := range world.platforms {
 		imd.Color = p.Color
-		imd.Push(p.rect.Min, p.rect.Max)
+		imd.Push(p.r.Min, p.r.Max)
 		imd.Rectangle(0)
 	}
 
 	imd.Color = pixel.RGB(0, 0.5, 1)
 	for _, sh := range world.shooters {
-		imd.Push(sh.Pos())
+		imd.Push(sh.pos())
 	}
 	imd.Circle(5, 0)
 
 	imd.Color = collectorColor()
 	for _, cl := range world.collectors {
-		imd.Push(cl.Rect().Min, cl.Rect().Max)
+		imd.Push(cl.rect().Min, cl.rect().Max)
 		imd.Rectangle(3)
 	}
 }
