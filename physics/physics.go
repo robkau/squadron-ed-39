@@ -9,7 +9,6 @@ import (
 const (
 	Dt                             = 0.1 // global simulation timestep
 	MaxBulletBound         float64 = 525
-	MaxWindowBound                 = 500
 	BulletMinSpeed         float64 = 45
 	PlatformSpeed          float64 = 5
 	BulletPoolSize                 = 2000
@@ -30,15 +29,15 @@ func (world *world) Update(dt float64, mp pixel.Vec) {
 
 	// spawn progressively harder enemies
 	if world.iteration%150 == 0 && world.iteration >= 650 {
-		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
+		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
 		world.AddPlatform(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, 20)
 	}
 	if world.iteration%80 == 0 && world.iteration >= 2000 {
-		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
+		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
 		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
 	if world.iteration%4 == 0 && world.iteration >= 3500 {
-		xPos := rand.Float64()*MaxWindowBound*1.5 - (MaxWindowBound*1.5)/2
+		xPos := rand.Float64()*world.size*1.5 - (world.size*1.5)/2
 		world.AddPlatformWithV(pixel.Rect{Min: pixel.Vec{X: xPos, Y: 500}, Max: pixel.Vec{X: xPos + 50, Y: 525}}, pixel.Vec{X: xPos, Y: -1000}, pixel.Vec{X: 0, Y: -20}, 5)
 	}
 

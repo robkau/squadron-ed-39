@@ -30,9 +30,10 @@ type world struct {
 	atlas         *text.Atlas
 	deadBullet    bool
 	deadPlatform  bool
+	size          float64
 }
 
-func NewWorld() *world {
+func NewWorld(size int) *world {
 	w := &world{
 		shooters:    make([]*BulletSpawner, 0),
 		bullets:     make([]*Bullet, 0),
@@ -42,6 +43,7 @@ func NewWorld() *world {
 		BulletPool:  NewPool(BulletPoolSize),
 		atlas:       text.NewAtlas(basicfont.Face7x13, text.ASCII),
 		energyCount: 40,
+		size:        float64(size),
 	}
 
 	w.AddCollector(pixel.Vec{X: 0, Y: -350})
@@ -108,7 +110,7 @@ func (world *world) lowestPlatform() *platform {
 
 func (world *world) CheckLoseCondition() bool {
 	for _, pl := range world.platforms {
-		if pl.Pos().Y < -MaxWindowBound {
+		if pl.Pos().Y < -world.size {
 			return true
 		}
 	}

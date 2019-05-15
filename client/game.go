@@ -19,6 +19,7 @@ const (
 	CpuProfile  = "cpu.pprof"
 	DebugEnvVar = "sq39_debug"
 	StatUiWidth = 200
+	gwSize      = 500
 
 	StatsText = "--------------------\n%d joules available\n\n%d advancing enemies\n\n%d bullets in flight\n--------------------"
 	StoryText = "The earth is under attack\nby strange platforms,\nyou were sent to defend.\n\nBuild turrets.\nDestroy moving platforms.\nGreen square collects.\nTurrets prioritize enemies.\n\nBuild quickly,\nmore enemies soon."
@@ -28,7 +29,7 @@ const (
 func startFreePlay(debugSet bool) {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Squadron E.D. 39",
-		Bounds: pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound+StatUiWidth, physics.MaxWindowBound),
+		Bounds: pixel.R(-gwSize, -gwSize, gwSize+StatUiWidth, gwSize),
 		VSync:  false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
@@ -38,7 +39,7 @@ func startFreePlay(debugSet bool) {
 	win.SetSmooth(false)
 	win.SetMatrix(pixel.IM)
 
-	gameCanvas := pixelgl.NewCanvas(pixel.R(-physics.MaxWindowBound, -physics.MaxWindowBound, physics.MaxWindowBound, physics.MaxWindowBound))
+	gameCanvas := pixelgl.NewCanvas(pixel.R(-gwSize, -gwSize, gwSize, gwSize))
 
 	imd := imdraw.New(nil)
 	imd.Precision = 32
@@ -50,9 +51,9 @@ func startFreePlay(debugSet bool) {
 
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
-	txt := text.New(pixel.V(physics.MaxWindowBound+25, physics.MaxWindowBound-50), atlas)
-	storyTxt := text.New(pixel.V(physics.MaxWindowBound+10, physics.MaxWindowBound-200), atlas)
-	helpTxt := text.New(pixel.V(physics.MaxWindowBound+10, -physics.MaxWindowBound+200), atlas)
+	txt := text.New(pixel.V(gwSize+25, gwSize-50), atlas)
+	storyTxt := text.New(pixel.V(gwSize+10, gwSize-200), atlas)
+	helpTxt := text.New(pixel.V(gwSize+10, -gwSize+200), atlas)
 	txt.Color = colornames.Lightgrey
 	storyTxt.Color = colornames.Lightgrey
 	helpTxt.Color = colornames.Lightgrey
@@ -62,13 +63,13 @@ func startFreePlay(debugSet bool) {
 	fmt.Fprint(storyTxt, StoryText)
 	fmt.Fprint(helpTxt, HelpText)
 
-	var world = physics.NewWorld()
+	var world = physics.NewWorld(gwSize)
 
 	for !win.Closed() {
 		dt := physics.Dt
 		mp := win.MousePosition()
-		if mp.X > physics.MaxWindowBound {
-			mp.X = physics.MaxWindowBound
+		if mp.X > gwSize {
+			mp.X = gwSize
 		}
 
 		// slow motion with tab
@@ -78,7 +79,7 @@ func startFreePlay(debugSet bool) {
 
 		// reset world with r
 		if win.JustPressed(pixelgl.KeyR) {
-			world = physics.NewWorld()
+			world = physics.NewWorld(gwSize)
 		}
 
 		// move shooters towards mouse location on left click or mouse scroll
@@ -101,7 +102,7 @@ func startFreePlay(debugSet bool) {
 		world.Update(dt, mp)
 
 		if world.CheckLoseCondition() {
-			world = physics.NewWorld()
+			world = physics.NewWorld(gwSize)
 		}
 
 		// draw updated scene

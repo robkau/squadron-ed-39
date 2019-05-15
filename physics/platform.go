@@ -31,7 +31,7 @@ func deletePlatforms(platforms *[]*platform, collideables *[]collideable) {
 			pid := p.Id()
 			// remove from world platforms slice
 			(*platforms)[i] = (*platforms)[len(*platforms)-1]
-			// dereference dead platform pointer
+			// dereference dead platform
 			(*platforms)[len(*platforms)-1] = nil
 			// shrink slice by 1
 			*platforms = (*platforms)[:len(*platforms)-1]
@@ -40,7 +40,7 @@ func deletePlatforms(platforms *[]*platform, collideables *[]collideable) {
 			for j, c := range *collideables {
 				if c != nil && pid == c.Id() {
 					(*collideables)[j] = (*collideables)[len(*collideables)-1]
-					// dereference dead platform pointer
+					// dereference dead platform
 					(*collideables)[len(*collideables)-1] = nil
 					// shrink slice by 1
 					*collideables = (*collideables)[:len(*collideables)-1]
